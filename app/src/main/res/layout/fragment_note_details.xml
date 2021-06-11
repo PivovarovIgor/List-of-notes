@@ -33,4 +33,13 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Body2"
         tools:text="created 23.04.2021" />
 
+    <DatePicker
+        android:id="@+id/create_date_note_calender"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:calendarViewShown="false"
+        android:datePickerMode="spinner"
+        android:spinnersShown="true" />
+
+
 </LinearLayout>

@@ -4,16 +4,15 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.DatePicker;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import org.w3c.dom.Text;
-
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.util.Date;
 
 import ru.geekbrains.listofnotes.R;
 import ru.geekbrains.listofnotes.domain.Note;
@@ -57,8 +56,12 @@ public class NoteDetailsFragment extends Fragment {
 
             TextView createDateView = view.findViewById(R.id.create_date_note);
             SimpleDateFormat dateFormat = new SimpleDateFormat(getString(R.string.format_date));
+            Date createDate = note.getCreateDate().getTime();
             createDateView.setText(String.format("create: %s",
-                    dateFormat.format(note.getCreateDate().getTime())));
+                    dateFormat.format(createDate)));
+
+            DatePicker dp = view.findViewById(R.id.create_date_note_calender);
+            dp.updateDate(1900 + createDate.getYear(), createDate.getMonth(), createDate.getDay());
         }
     }
 }

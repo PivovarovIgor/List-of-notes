@@ -7,6 +7,17 @@ import java.util.Calendar;
 
 public class Note implements Parcelable {
 
+    public static final Creator<Note> CREATOR = new Creator<Note>() {
+        @Override
+        public Note createFromParcel(Parcel in) {
+            return new Note(in);
+        }
+
+        @Override
+        public Note[] newArray(int size) {
+            return new Note[size];
+        }
+    };
     private final String caption;
     private final String description;
     private final Calendar createDate;
@@ -22,18 +33,6 @@ public class Note implements Parcelable {
         description = in.readString();
         createDate = (Calendar) in.readSerializable();
     }
-
-    public static final Creator<Note> CREATOR = new Creator<Note>() {
-        @Override
-        public Note createFromParcel(Parcel in) {
-            return new Note(in);
-        }
-
-        @Override
-        public Note[] newArray(int size) {
-            return new Note[size];
-        }
-    };
 
     public String getCaption() {
         return caption;
