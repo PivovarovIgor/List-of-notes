@@ -1,6 +1,7 @@
 package ru.geekbrains.listofnotes.ui.details;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,7 @@ import ru.geekbrains.listofnotes.domain.Note;
 
 public class NoteDetailsFragment extends Fragment {
 
+    private static final String TAG_FOR_LOG = "NoteDetailsFragment";
     private static final String KEY_NOTE = "ARG_NOTE";
 
     public static NoteDetailsFragment newInstance(Note note) {
@@ -63,5 +65,39 @@ public class NoteDetailsFragment extends Fragment {
             DatePicker dp = view.findViewById(R.id.create_date_note_calender);
             dp.updateDate(1900 + createDate.getYear(), createDate.getMonth(), createDate.getDay());
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        writeLog("onPause");
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        writeLog("onStop");
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        writeLog("onDestroyView");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        writeLog("onDestroy");
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        writeLog("onDetach");
+    }
+
+    private void writeLog(String msg) {
+        Log.i(TAG_FOR_LOG, msg);
     }
 }

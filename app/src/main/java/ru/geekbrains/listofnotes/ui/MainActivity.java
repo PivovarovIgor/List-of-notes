@@ -1,44 +1,53 @@
 package ru.geekbrains.listofnotes.ui;
 
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
 import ru.geekbrains.listofnotes.R;
 import ru.geekbrains.listofnotes.domain.Note;
-import ru.geekbrains.listofnotes.ui.details.NoteDetailsActivity;
 import ru.geekbrains.listofnotes.ui.details.NoteDetailsFragment;
 import ru.geekbrains.listofnotes.ui.list.ListOfNotesFragment;
 
 public class MainActivity extends AppCompatActivity implements ListOfNotesFragment.OnNoteCliched {
 
     private static final String KEY_CURRENT_NOTE = "current_note";
-    private Note note;
+    private Note currentNote;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        initMainFragment();
+
         if (savedInstanceState != null) {
-            note = savedInstanceState.getParcelable(KEY_CURRENT_NOTE);
+            currentNote = savedInstanceState.getParcelable(KEY_CURRENT_NOTE);
             showNote();
         }
+    }
+
+    private void initMainFragment() {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.main_fragment, new ListOfNotesFragment())
+                .commit();
     }
 
     @Override
     public void onNoteClicked(Note note) {
 
-        this.note = note;
+        this.currentNote = note;
         showNote();
     }
 
     private void showNote() {
 
-        if (note == null) {
+        if (currentNote == null) {
             return;
         }
 
@@ -46,20 +55,36 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
                 == Configuration.ORIENTATION_LANDSCAPE) {
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.notes_details_fragment, NoteDetailsFragment.newInstance(note))
+                    .replace(R.id.notes_details_fragment, NoteDetailsFragment.newInstance(currentNote))
                     .commit();
         } else {
-            Intent intent = new Intent(this, NoteDetailsActivity.class);
-            intent.putExtra(NoteDetailsActivity.ARG_NOTE, note);
-            startActivity(intent);
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.main_fragment,
+                            NoteDetailsFragment.newInstance(currentNote),
+                            NoteDetailsFragment.class.getName())
+                    .addToBackStack(null)
+                    .commit();
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Log.i("MainActivity", "onBackPressed");
+        if (currentNote != null) {
+            Fragment fr = getSupportFragmentManager()
+                    .findFragmentByTag(NoteDetailsFragment.class.getName());
+            if (fr == null) {
+                currentNote = null;
+            }
+        }
+
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (note != null) {
-            outState.putParcelable(KEY_CURRENT_NOTE, note);
-        }
+        outState.putParcelable(KEY_CURRENT_NOTE, currentNote);
     }
 }
