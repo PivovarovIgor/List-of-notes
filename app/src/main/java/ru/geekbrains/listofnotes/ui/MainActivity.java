@@ -7,6 +7,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import ru.geekbrains.listofnotes.R;
 import ru.geekbrains.listofnotes.domain.Note;
@@ -15,8 +17,10 @@ import ru.geekbrains.listofnotes.ui.list.ListOfNotesFragment;
 
 public class MainActivity extends AppCompatActivity implements ListOfNotesFragment.OnNoteCliched {
 
+    private static final String TAG_NOTE_FRAGMENT = NoteDetailsFragment.class.getName();
     private static final String KEY_CURRENT_NOTE = "current_note";
     private Note currentNote;
+    private boolean isLandscape;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +28,15 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
         setContentView(R.layout.activity_main);
 
         initMainFragment();
+        isLandscape = getResources().getConfiguration().orientation
+                == Configuration.ORIENTATION_LANDSCAPE;
+
+        getSupportFragmentManager().removeOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+                currentNote = null;
+            }
+        });
 
         if (savedInstanceState != null) {
             currentNote = savedInstanceState.getParcelable(KEY_CURRENT_NOTE);
@@ -51,40 +64,39 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
             return;
         }
 
-        if (getResources().getConfiguration().orientation
-                == Configuration.ORIENTATION_LANDSCAPE) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.notes_details_fragment, NoteDetailsFragment.newInstance(currentNote))
-                    .commit();
-        } else {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.main_fragment,
-                            NoteDetailsFragment.newInstance(currentNote),
-                            NoteDetailsFragment.class.getName())
-                    .addToBackStack(null)
-                    .commit();
-        }
+        getSupportFragmentManager()
+                .popBackStack(TAG_NOTE_FRAGMENT, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+        int idContainer = (isLandscape) ? R.id.notes_details_fragment : R.id.main_fragment;
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(idContainer,
+                        NoteDetailsFragment.newInstance(currentNote),
+                        TAG_NOTE_FRAGMENT)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                .addToBackStack(TAG_NOTE_FRAGMENT)
+                .commit();
     }
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
         Log.i("MainActivity", "onBackPressed");
         if (currentNote != null) {
             Fragment fr = getSupportFragmentManager()
-                    .findFragmentByTag(NoteDetailsFragment.class.getName());
-            if (fr == null) {
+                    .findFragmentByTag(TAG_NOTE_FRAGMENT);
+            if (fr != null) {
                 currentNote = null;
             }
         }
-
+        super.onBackPressed();
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelable(KEY_CURRENT_NOTE, currentNote);
+        if (currentNote != null) {
+            outState.putParcelable(KEY_CURRENT_NOTE, currentNote);
+        }
     }
 }
