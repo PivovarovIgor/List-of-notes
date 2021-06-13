@@ -1,4 +1,11 @@
 <resources>
     <string name="app_name">List of notes</string>
     <string name="format_date">dd.MM.yyyy</string>
+    <string name="title_toolbar_on_list">List of notes</string>
+    <string name="search">Search</string>
+    <string name="add_new_note">Add new note</string>
+    <string name="edit">Edit</string>
+    <string name="share">Share</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
 </resources>

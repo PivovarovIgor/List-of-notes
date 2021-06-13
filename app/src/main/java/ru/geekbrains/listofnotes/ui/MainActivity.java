@@ -3,9 +3,14 @@ package ru.geekbrains.listofnotes.ui;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -15,7 +20,7 @@ import ru.geekbrains.listofnotes.domain.Note;
 import ru.geekbrains.listofnotes.ui.details.NoteDetailsFragment;
 import ru.geekbrains.listofnotes.ui.list.ListOfNotesFragment;
 
-public class MainActivity extends AppCompatActivity implements ListOfNotesFragment.OnNoteCliched {
+public class MainActivity extends AppCompatActivity implements ListOfNotesFragment.OnNoteClicked {
 
     private static final String TAG_NOTE_FRAGMENT = NoteDetailsFragment.class.getName();
     private static final String KEY_CURRENT_NOTE = "current_note";
@@ -27,21 +32,40 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         initMainFragment();
         isLandscape = getResources().getConfiguration().orientation
                 == Configuration.ORIENTATION_LANDSCAPE;
-
-        getSupportFragmentManager().removeOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
-            @Override
-            public void onBackStackChanged() {
-                currentNote = null;
-            }
-        });
 
         if (savedInstanceState != null) {
             currentNote = savedInstanceState.getParcelable(KEY_CURRENT_NOTE);
             showNote();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_appbar, menu);
+        MenuItem actionSearch = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) actionSearch.getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Toast.makeText(MainActivity.this, "Search: " + query, Toast.LENGTH_LONG).show();
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (!newText.equals("")) {
+                    Toast.makeText(MainActivity.this, "New text search: " + newText, Toast.LENGTH_LONG).show();
+                }
+                return true;
+            }
+        });
+        return super.onCreateOptionsMenu(menu);
     }
 
     private void initMainFragment() {

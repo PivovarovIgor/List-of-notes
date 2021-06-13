@@ -1,16 +1,27 @@
 package ru.geekbrains.listofnotes.ui.details;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.DatePicker;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.ShareActionProvider;
+import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
+
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -22,6 +33,8 @@ public class NoteDetailsFragment extends Fragment {
 
     private static final String TAG_FOR_LOG = "NoteDetailsFragment";
     private static final String KEY_NOTE = "ARG_NOTE";
+    private ShareActionProvider shareActionProvider;
+    private Note note;
 
     public static NoteDetailsFragment newInstance(Note note) {
         NoteDetailsFragment fragment = new NoteDetailsFragment();
@@ -34,6 +47,7 @@ public class NoteDetailsFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Nullable
@@ -48,7 +62,7 @@ public class NoteDetailsFragment extends Fragment {
 
         Bundle bundle = getArguments();
         if (bundle != null) {
-            Note note = bundle.getParcelable(KEY_NOTE);
+            note = bundle.getParcelable(KEY_NOTE);
 
             TextView captionView = view.findViewById(R.id.note_caption);
             captionView.setText(note.getCaption());
@@ -68,36 +82,38 @@ public class NoteDetailsFragment extends Fragment {
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        writeLog("onPause");
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_fragment_note, menu);
+        MenuItem menuItem = menu.findItem(R.id.option_menu_share);
+        shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+        setShareActionIntent();
+
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    private void setShareActionIntent() {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_TEXT,
+                String.format("Note: %s: %s", note.getCaption(), note.getDescription()));
+        shareActionProvider.setShareIntent(shareIntent);
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-        writeLog("onStop");
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        writeLog("onDestroyView");
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        writeLog("onDestroy");
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        writeLog("onDetach");
-    }
-
-    private void writeLog(String msg) {
-        Log.i(TAG_FOR_LOG, msg);
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.option_menu_edit) {
+            Toast.makeText(requireContext(), "Select option menu \"edit\"", Toast.LENGTH_LONG).show();
+            return true;
+        } else if (item.getItemId() == R.id.option_menu_delete_note) {
+            Snackbar.make(((Activity)requireContext()).findViewById(R.id.coordinator),
+                    "The note has deleted",
+                    BaseTransientBottomBar.LENGTH_LONG)
+                    .setAction(R.string.cancel, v -> Toast.makeText(requireContext(),
+                            "Action delete has canceled",
+                            Toast.LENGTH_LONG).show())
+                    .show();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
