@@ -31,7 +31,6 @@ import ru.geekbrains.listofnotes.domain.Note;
 
 public class NoteDetailsFragment extends Fragment {
 
-    private static final String TAG_FOR_LOG = "NoteDetailsFragment";
     private static final String KEY_NOTE = "ARG_NOTE";
     private Note note;
 
