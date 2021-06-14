@@ -2,22 +2,27 @@ package ru.geekbrains.listofnotes.ui;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.google.android.material.navigation.NavigationView;
+
 import ru.geekbrains.listofnotes.R;
 import ru.geekbrains.listofnotes.domain.Note;
 import ru.geekbrains.listofnotes.ui.details.NoteDetailsFragment;
+import ru.geekbrains.listofnotes.ui.list.AboutFragment;
 import ru.geekbrains.listofnotes.ui.list.ListOfNotesFragment;
 
 public class MainActivity extends AppCompatActivity implements ListOfNotesFragment.OnNoteClicked {
@@ -30,19 +35,54 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_nav_drawer_main);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        initToolBarAndDrawer();
 
-        initMainFragment();
         isLandscape = getResources().getConfiguration().orientation
                 == Configuration.ORIENTATION_LANDSCAPE;
 
         if (savedInstanceState != null) {
             currentNote = savedInstanceState.getParcelable(KEY_CURRENT_NOTE);
             showNote();
+        } else {
+            setFragment(new ListOfNotesFragment());
         }
+    }
+
+    private void initToolBarAndDrawer() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this,
+                drawerLayout,
+                toolbar,
+                R.string.open_drawer,
+                R.string.close_drawer
+        );
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = findViewById(R.id.navigation_view);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                if (item.getItemId() == R.id.navigation_main_screen) {
+                    setFragment(new ListOfNotesFragment());
+                } else if (item.getItemId() == R.id.navigation_settings) {
+                    setFragment(new SettingsFragment());
+                } else if (item.getItemId() == R.id.navigation_about) {
+                    setFragment(new AboutFragment());
+                } else {
+                    return false;
+                }
+                drawerLayout.closeDrawer(GravityCompat.START);
+                return true;
+            }
+        });
     }
 
     @Override
@@ -68,10 +108,12 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
         return super.onCreateOptionsMenu(menu);
     }
 
-    private void initMainFragment() {
+    private void setFragment(Fragment fragment) {
+        getSupportFragmentManager()
+                .popBackStack(TAG_NOTE_FRAGMENT, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.main_fragment, new ListOfNotesFragment())
+                .replace(R.id.main_fragment, fragment)
                 .commit();
     }
 
@@ -105,7 +147,13 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
 
     @Override
     public void onBackPressed() {
-        Log.i("MainActivity", "onBackPressed");
+
+        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return;
+        }
+
         if (currentNote != null) {
             Fragment fr = getSupportFragmentManager()
                     .findFragmentByTag(TAG_NOTE_FRAGMENT);

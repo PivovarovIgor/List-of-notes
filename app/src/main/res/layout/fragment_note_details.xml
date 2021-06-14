@@ -7,7 +7,7 @@
     android:orientation="vertical"
     android:padding="@dimen/default_padding">
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/note_caption"
         style="@style/shadow_effect"
         android:layout_width="match_parent"
@@ -16,7 +16,7 @@
         android:gravity="center"
         tools:text="caption note" />
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/note_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -24,7 +24,7 @@
         android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
         tools:text="description of note" />
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/create_date_note"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

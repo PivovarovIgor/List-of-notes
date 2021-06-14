@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.textview.MaterialTextView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/note_caption"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="@dimen/default_padding"
     android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
-    tools:text="note caption" />
+    tools:text="note caption"
+    android:elevation="5dp"/>
