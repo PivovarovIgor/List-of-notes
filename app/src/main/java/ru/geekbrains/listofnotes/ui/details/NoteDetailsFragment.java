@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.ShareActionProvider;
 import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
@@ -33,7 +33,6 @@ public class NoteDetailsFragment extends Fragment {
 
     private static final String TAG_FOR_LOG = "NoteDetailsFragment";
     private static final String KEY_NOTE = "ARG_NOTE";
-    private ShareActionProvider shareActionProvider;
     private Note note;
 
     public static NoteDetailsFragment newInstance(Note note) {
@@ -50,16 +49,29 @@ public class NoteDetailsFragment extends Fragment {
         setHasOptionsMenu(true);
     }
 
+    private void initPopupMenu(View view) {
+        TextView textView = view.findViewById(R.id.note_caption);
+        textView.setOnClickListener(v -> {
+            Activity activity = requireActivity();
+            PopupMenu popupMenu = new PopupMenu(activity, v);
+            activity.getMenuInflater().inflate(R.menu.menu_fragment_note, popupMenu.getMenu());
+            setShareActionProvider(popupMenu.getMenu());
+            popupMenu.setOnMenuItemClickListener(this::onMenuSelected);
+            popupMenu.show();
+        });
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_note_details, container, false);
+        View view = inflater.inflate(R.layout.fragment_note_details, container, false);
+        initPopupMenu(view);
+        return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         Bundle bundle = getArguments();
         if (bundle != null) {
             note = bundle.getParcelable(KEY_NOTE);
@@ -84,14 +96,16 @@ public class NoteDetailsFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.menu_fragment_note, menu);
-        MenuItem menuItem = menu.findItem(R.id.option_menu_share);
-        shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
-        setShareActionIntent();
-
+        setShareActionProvider(menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
-    private void setShareActionIntent() {
+    private void setShareActionProvider(Menu menu) {
+        MenuItem menuItem = menu.findItem(R.id.option_menu_share);
+        if (menuItem == null) {
+            return;
+        }
+        ShareActionProvider shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
         shareIntent.putExtra(Intent.EXTRA_TEXT,
@@ -101,6 +115,13 @@ public class NoteDetailsFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (onMenuSelected(item)) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private boolean onMenuSelected(MenuItem item) {
         if (item.getItemId() == R.id.option_menu_edit) {
             Toast.makeText(requireContext(), "Select option menu \"edit\"", Toast.LENGTH_LONG).show();
             return true;
@@ -114,6 +135,6 @@ public class NoteDetailsFragment extends Fragment {
                     .show();
             return true;
         }
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 }
