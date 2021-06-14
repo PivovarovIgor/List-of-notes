@@ -13,4 +13,7 @@
     <string name="about">About</string>
     <string name="open_drawer">Open drawer</string>
     <string name="close_drawer">Close drawer</string>
+    <string name="avatar">Avatar</string>
+    <string name="user_name">Pupkin</string>
+    <string name="user_email">pupkin@abc.com</string>
 </resources>

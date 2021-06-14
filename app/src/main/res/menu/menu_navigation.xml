@@ -4,7 +4,7 @@
         <item
             android:id="@+id/navigation_main_screen"
             android:checked="true"
-            android:icon="@drawable/ic_navigation_note_24"
+            android:icon="@drawable/ic_navigate_note_24"
             android:title="@string/notes" />
         <item
             android:id="@+id/navigation_settings"
@@ -12,6 +12,7 @@
             android:title="@string/settings" />
         <item
             android:id="@+id/navigation_about"
+            android:icon="@drawable/ic_navigate_info_24"
             android:title="@string/about" />
     </group>
 </menu>
