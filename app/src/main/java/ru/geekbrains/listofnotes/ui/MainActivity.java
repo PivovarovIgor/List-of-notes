@@ -2,6 +2,7 @@ package ru.geekbrains.listofnotes.ui;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -19,6 +20,8 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.navigation.NavigationView;
 
+import java.util.Random;
+
 import ru.geekbrains.listofnotes.R;
 import ru.geekbrains.listofnotes.domain.Note;
 import ru.geekbrains.listofnotes.ui.details.NoteDetailsFragment;
@@ -27,10 +30,16 @@ import ru.geekbrains.listofnotes.ui.list.ListOfNotesFragment;
 
 public class MainActivity extends AppCompatActivity implements ListOfNotesFragment.OnNoteClicked {
 
+    private static final String TAG = "MainActivity";
     private static final String TAG_NOTE_FRAGMENT = NoteDetailsFragment.class.getName();
     private static final String KEY_CURRENT_NOTE = "current_note";
+    private final int INSTANCE_ID = new Random().nextInt(100);
     private Note currentNote;
     private boolean isLandscape;
+
+    public MainActivity() {
+        writeLog("create instance");
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,9 +52,11 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
                 == Configuration.ORIENTATION_LANDSCAPE;
 
         if (savedInstanceState != null) {
+            writeLog("onCreate savedInstanceState != null");
             currentNote = savedInstanceState.getParcelable(KEY_CURRENT_NOTE);
             showNote();
         } else {
+            writeLog("onCreate");
             setFragment(new ListOfNotesFragment());
         }
     }
@@ -67,26 +78,72 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
         toggle.syncState();
 
         NavigationView navigationView = findViewById(R.id.navigation_view);
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                if (item.getItemId() == R.id.navigation_main_screen) {
-                    setFragment(new ListOfNotesFragment());
-                } else if (item.getItemId() == R.id.navigation_settings) {
-                    setFragment(new SettingsFragment());
-                } else if (item.getItemId() == R.id.navigation_about) {
-                    setFragment(new AboutFragment());
-                } else {
-                    return false;
-                }
-                drawerLayout.closeDrawer(GravityCompat.START);
-                return true;
+        navigationView.setNavigationItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.navigation_main_screen) {
+                setFragment(new ListOfNotesFragment());
+            } else if (item.getItemId() == R.id.navigation_settings) {
+                setFragment(new SettingsFragment());
+            } else if (item.getItemId() == R.id.navigation_about) {
+                setFragment(new AboutFragment());
+            } else {
+                return false;
             }
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
         });
     }
 
     @Override
+    protected void onStart() {
+        writeLog("onStart");
+        super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        writeLog("onResume");
+        super.onResume();
+    }
+
+    @Override
+    protected void onResumeFragments() {
+        writeLog("onResumeFragments");
+        super.onResumeFragments();
+    }
+
+    @Override
+    protected void onPause() {
+        writeLog("onPause");
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        writeLog("onStop");
+        super.onStop();
+    }
+
+    @Override
+    protected void onRestart() {
+        writeLog("onRestart");
+        super.onRestart();
+    }
+
+    @Override
+    protected void onDestroy() {
+        writeLog("onDestroy");
+        super.onDestroy();
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        writeLog("onConfigurationChanged");
+        super.onConfigurationChanged(newConfig);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        writeLog("onCreateOptionsMenu");
         getMenuInflater().inflate(R.menu.menu_appbar, menu);
         MenuItem actionSearch = menu.findItem(R.id.action_search);
         SearchView searchView = (SearchView) actionSearch.getActionView();
@@ -166,9 +223,14 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
+        writeLog("onSaveInstanceState");
         super.onSaveInstanceState(outState);
         if (currentNote != null) {
             outState.putParcelable(KEY_CURRENT_NOTE, currentNote);
         }
+    }
+
+    private void writeLog(String create_instance) {
+        Log.i(TAG, create_instance + " id:" + INSTANCE_ID);
     }
 }
