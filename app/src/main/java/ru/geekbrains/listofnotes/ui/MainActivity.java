@@ -25,7 +25,6 @@ import java.util.Random;
 import ru.geekbrains.listofnotes.R;
 import ru.geekbrains.listofnotes.domain.Note;
 import ru.geekbrains.listofnotes.ui.details.NoteDetailsFragment;
-import ru.geekbrains.listofnotes.ui.list.AboutFragment;
 import ru.geekbrains.listofnotes.ui.list.ListOfNotesFragment;
 
 public class MainActivity extends AppCompatActivity implements ListOfNotesFragment.OnNoteClicked {
@@ -84,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
             } else if (item.getItemId() == R.id.navigation_settings) {
                 setFragment(new SettingsFragment());
             } else if (item.getItemId() == R.id.navigation_about) {
-                setFragment(new AboutFragment());
+                setFragment(new SettingsFragment.AboutFragment());
             } else {
                 return false;
             }
