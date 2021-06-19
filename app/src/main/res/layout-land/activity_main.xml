@@ -24,8 +24,7 @@
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
         <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/main_fragment"
-            android:name="ru.geekbrains.listofnotes.ui.list.ListOfNotesFragment"
+            android:id="@+id/list_of_notes_fragment"
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -40,7 +39,7 @@
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/main_fragment"
+            app:layout_constraintStart_toEndOf="@+id/list_of_notes_fragment"
             app:layout_constraintTop_toTopOf="parent"
             tools:context=".ui.MainActivity" />
 

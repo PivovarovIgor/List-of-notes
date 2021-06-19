@@ -16,4 +16,5 @@
     <string name="avatar">Avatar</string>
     <string name="user_name">Pupkin</string>
     <string name="user_email">pupkin@abc.com</string>
+    <string name="info">info</string>
 </resources>

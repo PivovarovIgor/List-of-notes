@@ -14,9 +14,6 @@ import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.navigation.NavigationView;
 
@@ -24,17 +21,17 @@ import java.util.Random;
 
 import ru.geekbrains.listofnotes.R;
 import ru.geekbrains.listofnotes.domain.Note;
-import ru.geekbrains.listofnotes.ui.details.NoteDetailsFragment;
 import ru.geekbrains.listofnotes.ui.list.ListOfNotesFragment;
+
+import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 
 public class MainActivity extends AppCompatActivity implements ListOfNotesFragment.OnNoteClicked {
 
     private static final String TAG = "MainActivity";
-    private static final String TAG_NOTE_FRAGMENT = NoteDetailsFragment.class.getName();
+
     private static final String KEY_CURRENT_NOTE = "current_note";
     private final int INSTANCE_ID = new Random().nextInt(100);
-    private Note currentNote;
-    private boolean isLandscape;
+    private MainRouter mainRouter;
 
     public MainActivity() {
         writeLog("create instance");
@@ -45,18 +42,15 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nav_drawer_main);
 
-        initToolBarAndDrawer();
+        mainRouter = new MainRouter(getSupportFragmentManager(),
+                getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE);
 
-        isLandscape = getResources().getConfiguration().orientation
-                == Configuration.ORIENTATION_LANDSCAPE;
+        initToolBarAndDrawer();
 
         if (savedInstanceState != null) {
             writeLog("onCreate savedInstanceState != null");
-            currentNote = savedInstanceState.getParcelable(KEY_CURRENT_NOTE);
-            showNote();
         } else {
             writeLog("onCreate");
-            setFragment(new ListOfNotesFragment());
         }
     }
 
@@ -79,11 +73,11 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
         NavigationView navigationView = findViewById(R.id.navigation_view);
         navigationView.setNavigationItemSelectedListener(item -> {
             if (item.getItemId() == R.id.navigation_main_screen) {
-                setFragment(new ListOfNotesFragment());
+                mainRouter.showNotes();
             } else if (item.getItemId() == R.id.navigation_settings) {
-                setFragment(new SettingsFragment());
+                mainRouter.showSettings();
             } else if (item.getItemId() == R.id.navigation_about) {
-                setFragment(new SettingsFragment.AboutFragment());
+                mainRouter.showInfo();
             } else {
                 return false;
             }
@@ -164,41 +158,9 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
         return super.onCreateOptionsMenu(menu);
     }
 
-    private void setFragment(Fragment fragment) {
-        getSupportFragmentManager()
-                .popBackStack(TAG_NOTE_FRAGMENT, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.main_fragment, fragment)
-                .commit();
-    }
-
     @Override
     public void onNoteClicked(Note note) {
-
-        this.currentNote = note;
-        showNote();
-    }
-
-    private void showNote() {
-
-        if (currentNote == null) {
-            return;
-        }
-
-        getSupportFragmentManager()
-                .popBackStack(TAG_NOTE_FRAGMENT, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-
-        int idContainer = (isLandscape) ? R.id.notes_details_fragment : R.id.main_fragment;
-
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(idContainer,
-                        NoteDetailsFragment.newInstance(currentNote),
-                        TAG_NOTE_FRAGMENT)
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                .addToBackStack(TAG_NOTE_FRAGMENT)
-                .commit();
+        mainRouter.showDetailNote(note);
     }
 
     @Override
@@ -208,14 +170,8 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
             return;
-        }
-
-        if (currentNote != null) {
-            Fragment fr = getSupportFragmentManager()
-                    .findFragmentByTag(TAG_NOTE_FRAGMENT);
-            if (fr != null) {
-                currentNote = null;
-            }
+        } else if (mainRouter.closeDetailFragment()) {
+            return;
         }
         super.onBackPressed();
     }
@@ -224,9 +180,6 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         writeLog("onSaveInstanceState");
         super.onSaveInstanceState(outState);
-        if (currentNote != null) {
-            outState.putParcelable(KEY_CURRENT_NOTE, currentNote);
-        }
     }
 
     private void writeLog(String create_instance) {
