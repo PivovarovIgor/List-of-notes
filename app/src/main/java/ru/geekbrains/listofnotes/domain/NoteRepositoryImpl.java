@@ -23,6 +23,20 @@ public class NoteRepositoryImpl implements NoteRepository {
                 "17 february 2021",
                 new GregorianCalendar(2021, 2, 17)));
 
+        notes.add(new Note("One",
+                "17 february 2021",
+                new GregorianCalendar(2021, 2, 17)));
+
+
+        notes.add(new Note("Two",
+                "17 february 2021",
+                new GregorianCalendar(2021, 2, 17)));
+
+
+        notes.add(new Note("Three",
+                "17 february 2021",
+                new GregorianCalendar(2021, 2, 17)));
+
         return notes;
     }
 }

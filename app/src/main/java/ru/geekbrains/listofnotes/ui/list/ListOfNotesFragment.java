@@ -16,6 +16,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 import java.util.Random;
@@ -86,25 +88,16 @@ public class ListOfNotesFragment extends Fragment {
         writeLog("onViewCreated");
         super.onViewCreated(view, savedInstanceState);
 
-        LinearLayout listOfNotes = view.findViewById(R.id.list_of_notes_container);
+        RecyclerView listOfNotes = view.findViewById(R.id.list_of_notes_container);
+
+        listOfNotes.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         List<Note> notes = noteRepository.getNotes();
 
-        for (Note note : notes) {
+        ListOfNotesAdapter notesAdapter = new ListOfNotesAdapter();
+        notesAdapter.setData(notes);
 
-            View itemView = LayoutInflater.from(requireContext()).inflate(R.layout.item_note, listOfNotes, false);
-
-            itemView.setOnClickListener(v -> {
-                if (onNoteClicked != null) {
-                    onNoteClicked.onNoteClicked(note);
-                }
-            });
-
-            TextView noteName = itemView.findViewById(R.id.note_caption);
-            noteName.setText(note.getCaption());
-
-            listOfNotes.addView(itemView);
-        }
+        listOfNotes.setAdapter(notesAdapter);
     }
 
     @Override

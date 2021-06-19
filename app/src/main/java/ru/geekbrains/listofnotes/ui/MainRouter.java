@@ -11,7 +11,6 @@ import ru.geekbrains.listofnotes.ui.list.ListOfNotesFragment;
 
 public class MainRouter {
 
-    private static final String TAG_LIST_OF_NOTES_FRAGMENT = "ListOfNotesFragment";
     private final FragmentManager fragmentManager;
     private final boolean isLandscape;
 
