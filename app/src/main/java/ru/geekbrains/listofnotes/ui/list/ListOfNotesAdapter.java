@@ -18,9 +18,15 @@ public class ListOfNotesAdapter extends RecyclerView.Adapter<ListOfNotesAdapter.
 
     private final List<Note> notes = new ArrayList<>();
 
+    private OnNoteClickedListener onNoteClickedListener;
+
     public void setData(List<Note> toSet) {
         notes.clear();
         notes.addAll(toSet);
+    }
+
+    public void setOnNoteClickedListener(OnNoteClickedListener onNoteClickedListener) {
+        this.onNoteClickedListener = onNoteClickedListener;
     }
 
     @NonNull
@@ -42,12 +48,23 @@ public class ListOfNotesAdapter extends RecyclerView.Adapter<ListOfNotesAdapter.
         return notes.size();
     }
 
+    public interface OnNoteClickedListener {
+        void onNoteClick(@NonNull Note note);
+    }
+
     class NoteViewHolder extends RecyclerView.ViewHolder {
 
         TextView noteName;
 
         public NoteViewHolder(@NonNull View itemView) {
             super(itemView);
+
+            itemView.setOnClickListener(v -> {
+                if (onNoteClickedListener != null) {
+                    onNoteClickedListener.onNoteClick(notes.get(getAdapterPosition()));
+                }
+            });
+
             noteName = itemView.findViewById(R.id.note_caption);
         }
     }
