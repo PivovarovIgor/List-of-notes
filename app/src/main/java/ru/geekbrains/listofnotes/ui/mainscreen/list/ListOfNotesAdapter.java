@@ -1,4 +1,4 @@
-package ru.geekbrains.listofnotes.ui.list;
+package ru.geekbrains.listofnotes.ui.mainscreen.list;
 
 import android.view.LayoutInflater;
 import android.view.View;

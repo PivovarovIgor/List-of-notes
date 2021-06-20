@@ -1,4 +1,4 @@
-package ru.geekbrains.listofnotes.ui.list;
+package ru.geekbrains.listofnotes.ui.mainscreen.list;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -42,8 +42,8 @@ public class ListOfNotesFragment extends Fragment {
         writeLog("onAttach");
         super.onAttach(context);
 
-        if (context instanceof OnNoteClicked) {
-            onNoteClicked = (OnNoteClicked) context;
+        if (getParentFragment() instanceof OnNoteClicked) {
+            onNoteClicked = (OnNoteClicked) getParentFragment();
         }
     }
 
@@ -144,11 +144,11 @@ public class ListOfNotesFragment extends Fragment {
         onNoteClicked = null;
     }
 
-    public interface OnNoteClicked {
-        void onNoteClicked(Note note);
-    }
-
     private void writeLog(String create_instance) {
         Log.i(TAG, create_instance + " id:" + INSTANCE_ID);
+    }
+
+    public interface OnNoteClicked {
+        void onNoteClicked(Note note);
     }
 }

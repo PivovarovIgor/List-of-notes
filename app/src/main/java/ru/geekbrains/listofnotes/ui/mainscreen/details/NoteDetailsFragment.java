@@ -1,4 +1,4 @@
-package ru.geekbrains.listofnotes.ui.details;
+package ru.geekbrains.listofnotes.ui.mainscreen.details;
 
 import android.app.Activity;
 import android.content.Context;
@@ -27,7 +27,6 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Objects;
 import java.util.Random;
 
 import ru.geekbrains.listofnotes.R;

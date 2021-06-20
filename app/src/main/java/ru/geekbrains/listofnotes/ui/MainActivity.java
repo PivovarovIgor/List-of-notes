@@ -20,16 +20,11 @@ import com.google.android.material.navigation.NavigationView;
 import java.util.Random;
 
 import ru.geekbrains.listofnotes.R;
-import ru.geekbrains.listofnotes.domain.Note;
-import ru.geekbrains.listofnotes.ui.list.ListOfNotesFragment;
 
-import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
-
-public class MainActivity extends AppCompatActivity implements ListOfNotesFragment.OnNoteClicked {
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
-    private static final String KEY_CURRENT_NOTE = "current_note";
     private final int INSTANCE_ID = new Random().nextInt(100);
     private MainRouter mainRouter;
 
@@ -42,8 +37,7 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nav_drawer_main);
 
-        mainRouter = new MainRouter(getSupportFragmentManager(),
-                getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE);
+        mainRouter = new MainRouter(getSupportFragmentManager());
 
         initToolBarAndDrawer();
 
@@ -51,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
             writeLog("onCreate savedInstanceState != null");
         } else {
             writeLog("onCreate");
+            mainRouter.showNotes();
         }
     }
 
@@ -156,11 +151,6 @@ public class MainActivity extends AppCompatActivity implements ListOfNotesFragme
             }
         });
         return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public void onNoteClicked(Note note) {
-        mainRouter.showDetailNote(note);
     }
 
     @Override
