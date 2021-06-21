@@ -26,11 +26,13 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 
 import ru.geekbrains.listofnotes.R;
 import ru.geekbrains.listofnotes.domain.Note;
+import ru.geekbrains.listofnotes.ui.mainscreen.EditNote;
 
 public class NoteDetailsFragment extends Fragment {
 
@@ -38,6 +40,7 @@ public class NoteDetailsFragment extends Fragment {
     private static final String KEY_NOTE = "ARG_NOTE";
     private final int INSTANCE_ID = new Random().nextInt(100);
     private Note note;
+    private EditNote editNote;
 
     public NoteDetailsFragment() {
         writeLog("create instance");
@@ -55,6 +58,10 @@ public class NoteDetailsFragment extends Fragment {
     public void onAttach(@NonNull Context context) {
         writeLog("onAttach");
         super.onAttach(context);
+
+        if (getParentFragment() instanceof EditNote) {
+            editNote = (EditNote) getParentFragment();
+        }
     }
 
     @Override
@@ -101,12 +108,9 @@ public class NoteDetailsFragment extends Fragment {
 
             TextView createDateView = view.findViewById(R.id.create_date_note);
             SimpleDateFormat dateFormat = new SimpleDateFormat(getString(R.string.format_date));
-            Date createDate = note.getCreateDate().getTime();
+            Calendar createDate = note.getCreateDate();
             createDateView.setText(String.format("create: %s",
-                    dateFormat.format(createDate)));
-
-            DatePicker dp = view.findViewById(R.id.create_date_note_calender);
-            dp.updateDate(1900 + createDate.getYear(), createDate.getMonth(), createDate.getDay());
+                    dateFormat.format(createDate.getTime())));
         }
     }
 
@@ -150,6 +154,7 @@ public class NoteDetailsFragment extends Fragment {
     public void onDetach() {
         writeLog("onDetach");
         super.onDetach();
+        editNote = null;
     }
 
     @Override
@@ -184,7 +189,9 @@ public class NoteDetailsFragment extends Fragment {
 
     private boolean onMenuSelected(MenuItem item) {
         if (item.getItemId() == R.id.option_menu_edit) {
-            Toast.makeText(requireContext(), "Select option menu \"edit\"", Toast.LENGTH_LONG).show();
+            if (editNote != null) {
+                editNote.beginEditingNote(note);
+            }
             return true;
         } else if (item.getItemId() == R.id.option_menu_delete_note) {
             Snackbar.make(((Activity) requireContext()).findViewById(R.id.coordinator),

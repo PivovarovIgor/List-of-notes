@@ -17,4 +17,10 @@
     <string name="user_name">Pupkin</string>
     <string name="user_email">pupkin@abc.com</string>
     <string name="info">info</string>
+    <string name="title_caption">Caption:</string>
+    <string name="edit_hint_input_caption">input caption</string>
+    <string name="edit_description">Description:</string>
+    <string name="edit_hint_input_description">input description</string>
+    <string name="edit_create_date">Create date:</string>
+    <string name="apply_edit">Apply edit</string>
 </resources>

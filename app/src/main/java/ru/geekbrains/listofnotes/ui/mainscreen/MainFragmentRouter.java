@@ -6,6 +6,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import ru.geekbrains.listofnotes.R;
 import ru.geekbrains.listofnotes.domain.Note;
+import ru.geekbrains.listofnotes.ui.mainscreen.details.EditNoteFragment;
 import ru.geekbrains.listofnotes.ui.mainscreen.details.NoteDetailsFragment;
 import ru.geekbrains.listofnotes.ui.mainscreen.list.ListOfNotesFragment;
 
@@ -68,8 +69,8 @@ public class MainFragmentRouter {
     public boolean closeDetailFragment() {
         Fragment fragment = fragmentManager
                 .findFragmentById(R.id.notes_details_fragment);
-        if (fragment instanceof NoteDetailsFragment) {
-            if (isLandscape) {
+        if (!(fragment instanceof ListOfNotesFragment)) {
+            if (isLandscape && fragment != null) {
                 fragmentManager
                         .beginTransaction()
                         .remove(fragment)
@@ -80,5 +81,9 @@ public class MainFragmentRouter {
             return true;
         }
         return false;
+    }
+
+    public void beginEditingNote(Note note) {
+        setFragment(EditNoteFragment.newInstance(note));
     }
 }

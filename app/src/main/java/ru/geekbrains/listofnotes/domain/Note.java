@@ -19,9 +19,9 @@ public class Note implements Parcelable {
             return new Note[size];
         }
     };
-    private final String caption;
-    private final String description;
-    private final Calendar createDate;
+    private String caption;
+    private String description;
+    private Calendar createDate;
 
     public Note(String caption, String description, Calendar createDate) {
         this.caption = caption;
@@ -39,12 +39,24 @@ public class Note implements Parcelable {
         return caption;
     }
 
+    public void setCaption(String caption) {
+        this.caption = caption;
+    }
+
     public String getDescription() {
         return description;
     }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public Calendar getCreateDate() {
         return (Calendar) createDate.clone();
+    }
+
+    public void setCreateDate(Calendar createDate) {
+        this.createDate = (Calendar) createDate.clone();
     }
 
     @Override

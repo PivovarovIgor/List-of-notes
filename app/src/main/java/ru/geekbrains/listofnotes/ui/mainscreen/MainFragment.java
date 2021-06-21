@@ -13,7 +13,7 @@ import ru.geekbrains.listofnotes.R;
 import ru.geekbrains.listofnotes.domain.Note;
 import ru.geekbrains.listofnotes.ui.mainscreen.list.ListOfNotesFragment;
 
-public class MainFragment extends Fragment implements ListOfNotesFragment.OnNoteClicked {
+public class MainFragment extends Fragment implements ListOfNotesFragment.OnNoteClicked, EditNote {
 
     private MainFragmentRouter mainFragmentRouter;
 
@@ -34,5 +34,20 @@ public class MainFragment extends Fragment implements ListOfNotesFragment.OnNote
     @Override
     public void onNoteClicked(Note note) {
         mainFragmentRouter.showDetailNote(note);
+    }
+
+    @Override
+    public void beginEditingNote(Note note) {
+        mainFragmentRouter.beginEditingNote(note);
+    }
+
+    @Override
+    public void applyEditedNote(Note note) {
+        mainFragmentRouter.showDetailNote(note);
+    }
+
+    @Override
+    public void abortEditingNote() {
+
     }
 }
