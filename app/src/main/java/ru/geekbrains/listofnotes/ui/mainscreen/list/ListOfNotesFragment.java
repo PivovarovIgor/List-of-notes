@@ -1,8 +1,10 @@
 package ru.geekbrains.listofnotes.ui.mainscreen.list;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,6 +19,9 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
+
 import java.util.List;
 import java.util.Random;
 
@@ -24,6 +29,7 @@ import ru.geekbrains.listofnotes.R;
 import ru.geekbrains.listofnotes.domain.Note;
 import ru.geekbrains.listofnotes.domain.NoteRepository;
 import ru.geekbrains.listofnotes.domain.NoteRepositoryImpl;
+import ru.geekbrains.listofnotes.ui.mainscreen.EditNote;
 
 public class ListOfNotesFragment extends Fragment {
 
@@ -32,6 +38,9 @@ public class ListOfNotesFragment extends Fragment {
 
     private NoteRepository noteRepository;
     private OnNoteClicked onNoteClicked;
+    private EditNote editNote;
+    private ListOfNotesAdapter notesAdapter;
+    private Note selectedNote;
 
     public ListOfNotesFragment() {
         writeLog("create instance");
@@ -45,6 +54,9 @@ public class ListOfNotesFragment extends Fragment {
         if (getParentFragment() instanceof OnNoteClicked) {
             onNoteClicked = (OnNoteClicked) getParentFragment();
         }
+        if (getParentFragment() instanceof EditNote) {
+            editNote = (EditNote) getParentFragment();
+        }
     }
 
     @Override
@@ -54,6 +66,10 @@ public class ListOfNotesFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         noteRepository = new NoteRepositoryImpl();
+
+        notesAdapter = new ListOfNotesAdapter(this);
+        notesAdapter.setOnNoteClickedListener(note -> onNoteClicked.onNoteClicked(note));
+        notesAdapter.setOnNoteLongClickedListener(note -> selectedNote = note);
     }
 
     @Nullable
@@ -82,6 +98,40 @@ public class ListOfNotesFragment extends Fragment {
     }
 
     @Override
+    public void onCreateContextMenu(@NonNull ContextMenu menu, View v, @Nullable ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        requireActivity().getMenuInflater().inflate(R.menu.menu_fragment_note, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        writeLog("onContextItemSelected");
+        if (onMenuSelected(item)) {
+            return true;
+        }
+        return super.onContextItemSelected(item);
+    }
+
+    private boolean onMenuSelected(MenuItem item) {
+        if (item.getItemId() == R.id.option_menu_edit) {
+            if (editNote != null) {
+                editNote.beginEditingNote(selectedNote);
+            }
+            return true;
+        } else if (item.getItemId() == R.id.option_menu_delete_note) {
+            Snackbar.make(((Activity) requireContext()).findViewById(R.id.coordinator),
+                    "The note has deleted",
+                    BaseTransientBottomBar.LENGTH_LONG)
+                    .setAction(R.string.cancel, v -> Toast.makeText(requireContext(),
+                            "Action delete has canceled",
+                            Toast.LENGTH_LONG).show())
+                    .show();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         writeLog("onViewCreated");
         super.onViewCreated(view, savedInstanceState);
@@ -92,9 +142,7 @@ public class ListOfNotesFragment extends Fragment {
 
         List<Note> notes = noteRepository.getNotes();
 
-        ListOfNotesAdapter notesAdapter = new ListOfNotesAdapter();
         notesAdapter.setData(notes);
-        notesAdapter.setOnNoteClickedListener(note -> onNoteClicked.onNoteClicked(note));
 
         listOfNotes.setAdapter(notesAdapter);
 
@@ -142,6 +190,7 @@ public class ListOfNotesFragment extends Fragment {
         writeLog("onDetach");
         super.onDetach();
         onNoteClicked = null;
+        editNote = null;
     }
 
     private void writeLog(String create_instance) {

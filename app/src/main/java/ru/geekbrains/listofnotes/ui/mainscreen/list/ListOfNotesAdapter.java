@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -19,6 +20,12 @@ public class ListOfNotesAdapter extends RecyclerView.Adapter<ListOfNotesAdapter.
     private final List<Note> notes = new ArrayList<>();
 
     private OnNoteClickedListener onNoteClickedListener;
+    private OnNoteLongClickedListener onNoteLongClickedListener;
+    private final Fragment fragment;
+
+    public ListOfNotesAdapter(Fragment fragment) {
+        this.fragment = fragment;
+    }
 
     public void setData(List<Note> toSet) {
         notes.clear();
@@ -27,6 +34,10 @@ public class ListOfNotesAdapter extends RecyclerView.Adapter<ListOfNotesAdapter.
 
     public void setOnNoteClickedListener(OnNoteClickedListener onNoteClickedListener) {
         this.onNoteClickedListener = onNoteClickedListener;
+    }
+
+    public void setOnNoteLongClickedListener(OnNoteLongClickedListener onNoteLongClickedListener) {
+        this.onNoteLongClickedListener = onNoteLongClickedListener;
     }
 
     @NonNull
@@ -52,17 +63,32 @@ public class ListOfNotesAdapter extends RecyclerView.Adapter<ListOfNotesAdapter.
         void onNoteClick(@NonNull Note note);
     }
 
+    public interface OnNoteLongClickedListener {
+        void onNoteLongClick(@NonNull Note note);
+    }
+
     class NoteViewHolder extends RecyclerView.ViewHolder {
 
         TextView noteName;
 
         public NoteViewHolder(@NonNull View itemView) {
             super(itemView);
+            fragment.registerForContextMenu(itemView);
 
             itemView.setOnClickListener(v -> {
                 if (onNoteClickedListener != null) {
                     onNoteClickedListener.onNoteClick(notes.get(getAdapterPosition()));
                 }
+            });
+
+            itemView.setOnLongClickListener(v -> {
+                v.showContextMenu();
+
+                if (onNoteLongClickedListener != null) {
+                    onNoteLongClickedListener.onNoteLongClick(notes.get(getAdapterPosition()));
+                    return true;
+                }
+                return false;
             });
 
             noteName = itemView.findViewById(R.id.note_caption);
