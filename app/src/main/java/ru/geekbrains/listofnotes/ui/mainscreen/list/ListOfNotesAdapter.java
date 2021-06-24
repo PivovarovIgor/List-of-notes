@@ -18,10 +18,9 @@ import ru.geekbrains.listofnotes.domain.Note;
 public class ListOfNotesAdapter extends RecyclerView.Adapter<ListOfNotesAdapter.NoteViewHolder> {
 
     private final List<Note> notes = new ArrayList<>();
-
+    private final Fragment fragment;
     private OnNoteClickedListener onNoteClickedListener;
     private OnNoteLongClickedListener onNoteLongClickedListener;
-    private final Fragment fragment;
 
     public ListOfNotesAdapter(Fragment fragment) {
         this.fragment = fragment;
@@ -51,7 +50,7 @@ public class ListOfNotesAdapter extends RecyclerView.Adapter<ListOfNotesAdapter.
     public void onBindViewHolder(@NonNull ListOfNotesAdapter.NoteViewHolder holder, int position) {
 
         Note note = notes.get(position);
-        holder.noteName.setText(note.getCaption());
+        holder.bind(note);
     }
 
     @Override
@@ -69,7 +68,7 @@ public class ListOfNotesAdapter extends RecyclerView.Adapter<ListOfNotesAdapter.
 
     class NoteViewHolder extends RecyclerView.ViewHolder {
 
-        TextView noteName;
+        private final TextView noteName;
 
         public NoteViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -92,6 +91,10 @@ public class ListOfNotesAdapter extends RecyclerView.Adapter<ListOfNotesAdapter.
             });
 
             noteName = itemView.findViewById(R.id.note_caption);
+        }
+
+        public void bind(Note note) {
+            noteName.setText(note.getCaption());
         }
     }
 }
