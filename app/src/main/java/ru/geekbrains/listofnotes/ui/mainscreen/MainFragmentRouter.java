@@ -1,5 +1,7 @@
 package ru.geekbrains.listofnotes.ui.mainscreen;
 
+import android.os.Bundle;
+
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -9,16 +11,20 @@ import ru.geekbrains.listofnotes.domain.Note;
 import ru.geekbrains.listofnotes.ui.mainscreen.details.EditNoteFragment;
 import ru.geekbrains.listofnotes.ui.mainscreen.details.NoteDetailsFragment;
 import ru.geekbrains.listofnotes.ui.mainscreen.list.ListOfNotesFragment;
+import ru.geekbrains.listofnotes.ui.mainscreen.list.NoteAction;
 
 public class MainFragmentRouter {
 
+    public static final String KEY_RESULT = "KEY_RESULT";
+    public static final String KEY_NOTE = "KEY_NOTE";
+    public static final String KEY_NOTE_ACTION = "KEY_NOTE_ACTION";
     private final FragmentManager fragmentManager;
     private final boolean isLandscape;
 
     public MainFragmentRouter(FragmentManager fragmentManager, boolean isLandscape) {
         this.fragmentManager = fragmentManager;
         this.isLandscape = isLandscape;
-        showListFragment();
+        configureListFragment();
     }
 
     public void showDetailNote(Note note) {
@@ -34,7 +40,7 @@ public class MainFragmentRouter {
         }
     }
 
-    private void showListFragment() {
+    private void configureListFragment() {
         Fragment frToRemove = fragmentManager.findFragmentById(getContainerViewIdOfList(!isLandscape));
         Fragment frToReplace = fragmentManager.findFragmentById(getContainerViewIdOfList(isLandscape));
         FragmentTransaction ft = fragmentManager.beginTransaction();
@@ -47,6 +53,17 @@ public class MainFragmentRouter {
         if (!ft.isEmpty()) {
             ft.commit();
         }
+    }
+
+    public void showListOfNotes(Note note, boolean isNewNote) {
+        ListOfNotesFragment listOfNotesFragment = new ListOfNotesFragment();
+        if (note != null) {
+            Bundle bundleResult = new Bundle();
+            bundleResult.putParcelable(KEY_NOTE, note);
+            bundleResult.putString(KEY_NOTE_ACTION, isNewNote ? NoteAction.ADD.getKey() : NoteAction.UPDATE.getKey());
+            fragmentManager.setFragmentResult(KEY_RESULT, bundleResult);
+        }
+        setFragment(listOfNotesFragment);
     }
 
     private void setFragment(Fragment fragment) {

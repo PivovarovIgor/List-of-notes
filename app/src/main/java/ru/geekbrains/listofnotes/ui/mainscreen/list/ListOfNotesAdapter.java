@@ -17,6 +17,8 @@ import ru.geekbrains.listofnotes.domain.Note;
 
 public class ListOfNotesAdapter extends RecyclerView.Adapter<ListOfNotesAdapter.NoteViewHolder> {
 
+    private static final int NO_NOTE = -1;
+
     private final List<Note> notes = new ArrayList<>();
     private final Fragment fragment;
     private OnNoteClickedListener onNoteClickedListener;
@@ -64,6 +66,43 @@ public class ListOfNotesAdapter extends RecyclerView.Adapter<ListOfNotesAdapter.
 
     public interface OnNoteLongClickedListener {
         void onNoteLongClick(@NonNull Note note);
+    }
+
+    public void updateNote(Note note) {
+        int index = findNoteInCollection(note);
+        if (index != NO_NOTE) {
+            notes.set(index, note);
+            notifyItemChanged(index);
+        }
+    }
+
+    public int addNote(Note note) {
+        int index = findNoteInCollection(note);
+        if (index == NO_NOTE) {
+            notes.add(note);
+            notifyItemInserted(notes.size() - 1);
+        } else {
+            notes.set(index, note);
+            notifyItemChanged(index);
+        }
+        return index;
+    }
+
+    public void delete(Note note) {
+        int index = findNoteInCollection(note);
+        if (index != NO_NOTE) {
+            notes.remove(index);
+            notifyItemRemoved(index);
+        }
+    }
+
+    private int findNoteInCollection(Note note) {
+        for (int i = 0; i < notes.size(); i++) {
+            if (note.idNoteEquals(notes.get(i))) {
+                return i;
+            }
+        }
+        return NO_NOTE;
     }
 
     class NoteViewHolder extends RecyclerView.ViewHolder {

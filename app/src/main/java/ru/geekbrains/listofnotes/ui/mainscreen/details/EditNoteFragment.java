@@ -20,7 +20,7 @@ import java.util.Calendar;
 
 import ru.geekbrains.listofnotes.R;
 import ru.geekbrains.listofnotes.domain.Note;
-import ru.geekbrains.listofnotes.ui.mainscreen.EditNote;
+import ru.geekbrains.listofnotes.ui.mainscreen.EditNoteHolder;
 
 public class EditNoteFragment extends Fragment {
 
@@ -29,7 +29,7 @@ public class EditNoteFragment extends Fragment {
     private EditText editCaption;
     private EditText editDescription;
     private DatePicker editCreateDate;
-    private EditNote editNote;
+    private EditNoteHolder editNoteHolder;
     private Note note;
 
     public static EditNoteFragment newInstance(Note note) {
@@ -61,16 +61,17 @@ public class EditNoteFragment extends Fragment {
         editCreateDate = view.findViewById(R.id.edit_create_date_note_calender);
 
         note = requireArguments().getParcelable(KEY_NOTE);
+        if (note != null) {
+            editCaption.setText(note.getCaption());
+            editDescription.setText(note.getDescription());
+            Calendar createDate = note.getCreateDate();
+            editCreateDate.updateDate(createDate.get(Calendar.YEAR),
+                    createDate.get(Calendar.MONTH),
+                    createDate.get(Calendar.DAY_OF_MONTH));
+        }
 
-        editCaption.setText(note.getCaption());
-        editDescription.setText(note.getDescription());
-        Calendar createDate = note.getCreateDate();
-        editCreateDate.updateDate(createDate.get(Calendar.YEAR),
-                createDate.get(Calendar.MONTH),
-                createDate.get(Calendar.DAY_OF_MONTH));
-
-        if (getParentFragment() instanceof EditNote) {
-            editNote = (EditNote) getParentFragment();
+        if (getParentFragment() instanceof EditNoteHolder) {
+            editNoteHolder = (EditNoteHolder) getParentFragment();
         }
     }
 
@@ -84,12 +85,18 @@ public class EditNoteFragment extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         if (item.getItemId() == R.id.applyEdit) {
-            if (editNote != null) {
+            if (editNoteHolder != null) {
 
                 Calendar newCreateDate = Calendar.getInstance();
                 newCreateDate.set(Calendar.YEAR, editCreateDate.getYear());
                 newCreateDate.set(Calendar.MONTH, editCreateDate.getMonth());
                 newCreateDate.set(Calendar.DAY_OF_MONTH, editCreateDate.getDayOfMonth());
+
+                boolean isNewNote = false;
+                if (note == null) {
+                    note = new Note();
+                    isNewNote = true;
+                }
 
                 note.setCaption(editCaption.getText().toString());
                 note.setDescription(editDescription.getText().toString());
@@ -105,7 +112,7 @@ public class EditNoteFragment extends Fragment {
                 }
                 imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
-                editNote.applyEditedNote(note);
+                editNoteHolder.applyEditedNote(note, isNewNote);
             }
             return true;
         }

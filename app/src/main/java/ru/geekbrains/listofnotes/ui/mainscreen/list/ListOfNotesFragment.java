@@ -3,6 +3,7 @@ package ru.geekbrains.listofnotes.ui.mainscreen.list;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentResultListener;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,20 +29,21 @@ import java.util.Random;
 
 import ru.geekbrains.listofnotes.R;
 import ru.geekbrains.listofnotes.domain.Note;
-import ru.geekbrains.listofnotes.domain.NoteRepository;
 import ru.geekbrains.listofnotes.domain.NoteRepositoryImpl;
-import ru.geekbrains.listofnotes.ui.mainscreen.EditNote;
+import ru.geekbrains.listofnotes.ui.mainscreen.EditNoteHolder;
+import ru.geekbrains.listofnotes.ui.mainscreen.MainFragmentRouter;
 
 public class ListOfNotesFragment extends Fragment {
 
     private static final String TAG = "ListOfNotesFragment";
     private final int INSTANCE_ID = new Random().nextInt(100);
 
-    private NoteRepository noteRepository;
     private OnNoteClicked onNoteClicked;
-    private EditNote editNote;
+    private EditNoteHolder editNoteHolder;
     private ListOfNotesAdapter notesAdapter;
     private Note selectedNote;
+    private int scrollPosition;
+    private RecyclerView listOfNotes;
 
     public ListOfNotesFragment() {
         writeLog("create instance");
@@ -54,8 +57,8 @@ public class ListOfNotesFragment extends Fragment {
         if (getParentFragment() instanceof OnNoteClicked) {
             onNoteClicked = (OnNoteClicked) getParentFragment();
         }
-        if (getParentFragment() instanceof EditNote) {
-            editNote = (EditNote) getParentFragment();
+        if (getParentFragment() instanceof EditNoteHolder) {
+            editNoteHolder = (EditNoteHolder) getParentFragment();
         }
     }
 
@@ -65,11 +68,13 @@ public class ListOfNotesFragment extends Fragment {
 
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        noteRepository = new NoteRepositoryImpl();
 
         notesAdapter = new ListOfNotesAdapter(this);
         notesAdapter.setOnNoteClickedListener(note -> onNoteClicked.onNoteClicked(note));
         notesAdapter.setOnNoteLongClickedListener(note -> selectedNote = note);
+
+        List<Note> notes = NoteRepositoryImpl.SINGLE_INSTANCE.getNotes();
+        notesAdapter.setData(notes);
     }
 
     @Nullable
@@ -91,7 +96,7 @@ public class ListOfNotesFragment extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         writeLog("onOptionsItemSelected");
         if (item.getItemId() == R.id.option_menu_add_note) {
-            Toast.makeText(requireContext(), "Selected option menu \"Add\"", Toast.LENGTH_LONG).show();
+            editNoteHolder.beginEditingNote(null);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -114,8 +119,8 @@ public class ListOfNotesFragment extends Fragment {
 
     private boolean onMenuSelected(MenuItem item) {
         if (item.getItemId() == R.id.option_menu_edit) {
-            if (editNote != null) {
-                editNote.beginEditingNote(selectedNote);
+            if (editNoteHolder != null) {
+                editNoteHolder.beginEditingNote(selectedNote);
             }
             return true;
         } else if (item.getItemId() == R.id.option_menu_delete_note) {
@@ -136,15 +141,25 @@ public class ListOfNotesFragment extends Fragment {
         writeLog("onViewCreated");
         super.onViewCreated(view, savedInstanceState);
 
-        RecyclerView listOfNotes = view.findViewById(R.id.list_of_notes_container);
+        listOfNotes = view.findViewById(R.id.list_of_notes_container);
 
         listOfNotes.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        List<Note> notes = noteRepository.getNotes();
-
-        notesAdapter.setData(notes);
-
         listOfNotes.setAdapter(notesAdapter);
+
+        getParentFragmentManager().setFragmentResultListener(MainFragmentRouter.KEY_RESULT, this, (requestKey, result) -> {
+            if (result.containsKey(MainFragmentRouter.KEY_NOTE)) {
+                Note note = result.getParcelable(MainFragmentRouter.KEY_NOTE);
+                NoteAction noteAction = NoteAction.getActionByKey(result.getString(MainFragmentRouter.KEY_NOTE_ACTION));
+                if (noteAction == NoteAction.ADD) {
+                    scrollPosition = notesAdapter.addNote(note);
+                } else if (noteAction == NoteAction.UPDATE) {
+                    notesAdapter.updateNote(note);
+                } else if (noteAction == NoteAction.DELETE) {
+                    notesAdapter.delete(note);
+                }
+            }
+        });
 
         //notesAdapter.notifyDataSetChanged();
     }
@@ -165,6 +180,14 @@ public class ListOfNotesFragment extends Fragment {
     public void onResume() {
         writeLog("onResume");
         super.onResume();
+
+        Handler handler = new Handler();
+        handler.postDelayed(() -> {
+            if (scrollPosition > 0) {
+                listOfNotes.smoothScrollToPosition(scrollPosition);
+                scrollPosition = 0;
+            }
+        }, 200L);
     }
 
     @Override
@@ -190,7 +213,7 @@ public class ListOfNotesFragment extends Fragment {
         writeLog("onDetach");
         super.onDetach();
         onNoteClicked = null;
-        editNote = null;
+        editNoteHolder = null;
     }
 
     private void writeLog(String create_instance) {

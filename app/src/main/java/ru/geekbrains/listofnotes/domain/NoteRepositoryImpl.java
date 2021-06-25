@@ -6,10 +6,17 @@ import java.util.List;
 
 public class NoteRepositoryImpl implements NoteRepository {
 
-    @Override
-    public List<Note> getNotes() {
+    public static NoteRepositoryImpl SINGLE_INSTANCE = new NoteRepositoryImpl();
 
-        List<Note> notes = new ArrayList<>();
+    private List<Note> notes;
+
+    private NoteRepositoryImpl() {
+        initListOfNotes();
+    }
+
+    private void initListOfNotes() {
+
+        notes = new ArrayList<>();
 
         notes.add(new Note("Access code of door",
                 "In house, when live my friend Bob.",
@@ -36,7 +43,52 @@ public class NoteRepositoryImpl implements NoteRepository {
         notes.add(new Note("Three",
                 "17 february 2021",
                 new GregorianCalendar(2021, 2, 17)));
+    }
 
+    @Override
+    public List<Note> getNotes() {
         return notes;
+    }
+
+    @Override
+    public int addNote(Note note) {
+        if (note == null) {
+            return NO_NOTE;
+        }
+        int index = findNoteInCollection(note);
+        if (index == NO_NOTE) {
+            notes.add(note);
+            index = notes.size() - 1;
+        } else {
+            notes.set(index, note);
+        }
+        return index;
+    }
+
+    @Override
+    public int updateNote(Note note) {
+        int index = findNoteInCollection(note);
+        if (index != NO_NOTE) {
+            notes.set(index, note);
+        }
+        return index;
+    }
+
+    @Override
+    public int deleteNote(Note note) {
+        int index = findNoteInCollection(note);
+        if (index != NO_NOTE) {
+            notes.remove(index);
+        }
+        return index;
+    }
+
+    private int findNoteInCollection(Note note) {
+        for (int i = 0; i < notes.size(); i++) {
+            if (note.idNoteEquals(notes.get(i))) {
+                return i;
+            }
+        }
+        return NO_NOTE;
     }
 }

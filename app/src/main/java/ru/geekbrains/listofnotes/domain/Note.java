@@ -28,9 +28,17 @@ public class Note implements Parcelable {
     public Note(String caption, String description, Calendar createDate) {
         this.caption = caption;
         this.description = description;
-        this.createDate = (Calendar) createDate.clone();
+        if (createDate == null) {
+            this.createDate = Calendar.getInstance();
+        } else {
+            this.createDate = (Calendar) createDate.clone();
+        }
         this.id = countId;
         countId++;
+    }
+
+    public Note() {
+        this("", "", null);
     }
 
     protected Note(Parcel in) {
@@ -38,10 +46,6 @@ public class Note implements Parcelable {
         description = in.readString();
         createDate = (Calendar) in.readSerializable();
         id = in.readInt();
-    }
-
-    public int getId() {
-        return id;
     }
 
     public String getCaption() {
@@ -66,6 +70,13 @@ public class Note implements Parcelable {
 
     public void setCreateDate(Calendar createDate) {
         this.createDate = (Calendar) createDate.clone();
+    }
+
+    public boolean idNoteEquals(Note note) {
+        if (note == null) {
+            return false;
+        }
+        return this.id == note.id;
     }
 
     @Override
