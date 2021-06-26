@@ -105,7 +105,7 @@ public class NoteDetailsFragment extends Fragment {
             descriptionView.setText(note.getDescription());
 
             TextView createDateView = view.findViewById(R.id.create_date_note);
-            SimpleDateFormat dateFormat = new SimpleDateFormat(getString(R.string.format_date));
+            SimpleDateFormat dateFormat = (SimpleDateFormat) SimpleDateFormat.getDateInstance();
             Calendar createDate = note.getCreateDate();
             createDateView.setText(String.format("create: %s",
                     dateFormat.format(createDate.getTime())));
