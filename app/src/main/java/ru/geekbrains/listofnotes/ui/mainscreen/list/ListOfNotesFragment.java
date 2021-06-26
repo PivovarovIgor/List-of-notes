@@ -12,12 +12,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentResultListener;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -106,6 +104,7 @@ public class ListOfNotesFragment extends Fragment {
     public void onCreateContextMenu(@NonNull ContextMenu menu, View v, @Nullable ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         requireActivity().getMenuInflater().inflate(R.menu.menu_fragment_note, menu);
+        menu.removeItem(R.id.option_menu_share);
     }
 
     @Override
@@ -124,12 +123,12 @@ public class ListOfNotesFragment extends Fragment {
             }
             return true;
         } else if (item.getItemId() == R.id.option_menu_delete_note) {
+            editNoteHolder.deleteNote(selectedNote);
+            EditNoteHolder tempEditNoteHolder = editNoteHolder;
             Snackbar.make(((Activity) requireContext()).findViewById(R.id.coordinator),
                     "The note has deleted",
                     BaseTransientBottomBar.LENGTH_LONG)
-                    .setAction(R.string.cancel, v -> Toast.makeText(requireContext(),
-                            "Action delete has canceled",
-                            Toast.LENGTH_LONG).show())
+                    .setAction(R.string.cancel, v -> tempEditNoteHolder.undoDelete())
                     .show();
             return true;
         }
@@ -218,6 +217,10 @@ public class ListOfNotesFragment extends Fragment {
 
     private void writeLog(String create_instance) {
         Log.i(TAG, create_instance + " id:" + INSTANCE_ID);
+    }
+
+    public void undoDeleteNote(Note note, int index) {
+        notesAdapter.addNote(note, index);
     }
 
     public interface OnNoteClicked {

@@ -8,5 +8,7 @@ public interface EditNoteHolder {
 
     void applyEditedNote(Note note, boolean isNewNote);
 
-    void abortEditingNote();
+    void deleteNote(Note note);
+
+    void undoDelete();
 }

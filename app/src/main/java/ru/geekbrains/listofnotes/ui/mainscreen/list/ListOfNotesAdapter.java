@@ -60,14 +60,6 @@ public class ListOfNotesAdapter extends RecyclerView.Adapter<ListOfNotesAdapter.
         return notes.size();
     }
 
-    public interface OnNoteClickedListener {
-        void onNoteClick(@NonNull Note note);
-    }
-
-    public interface OnNoteLongClickedListener {
-        void onNoteLongClick(@NonNull Note note);
-    }
-
     public void updateNote(Note note) {
         int index = findNoteInCollection(note);
         if (index != NO_NOTE) {
@@ -76,16 +68,22 @@ public class ListOfNotesAdapter extends RecyclerView.Adapter<ListOfNotesAdapter.
         }
     }
 
-    public int addNote(Note note) {
+    public int addNote(Note note, int insertIndex) {
         int index = findNoteInCollection(note);
         if (index == NO_NOTE) {
-            notes.add(note);
-            notifyItemInserted(notes.size() - 1);
+            insertIndex = Math.min(insertIndex, notes.size());
+            notes.add(insertIndex, note);
+            notifyItemInserted(insertIndex);
+            index = insertIndex;
         } else {
             notes.set(index, note);
             notifyItemChanged(index);
         }
         return index;
+    }
+
+    public int addNote(Note note) {
+        return addNote(note, notes.size());
     }
 
     public void delete(Note note) {
@@ -103,6 +101,16 @@ public class ListOfNotesAdapter extends RecyclerView.Adapter<ListOfNotesAdapter.
             }
         }
         return NO_NOTE;
+    }
+
+    public interface OnNoteClickedListener {
+
+        void onNoteClick(@NonNull Note note);
+    }
+
+    public interface OnNoteLongClickedListener {
+
+        void onNoteLongClick(@NonNull Note note);
     }
 
     class NoteViewHolder extends RecyclerView.ViewHolder {

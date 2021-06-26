@@ -13,4 +13,6 @@ public interface NoteRepository {
     int updateNote(Note note);
 
     int deleteNote(Note note);
+
+    int undoDeleteNote(Note note, int indexRecover);
 }

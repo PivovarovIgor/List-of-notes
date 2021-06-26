@@ -16,11 +16,14 @@ import ru.geekbrains.listofnotes.domain.Note;
 import ru.geekbrains.listofnotes.domain.NoteRepository;
 import ru.geekbrains.listofnotes.domain.NoteRepositoryImpl;
 import ru.geekbrains.listofnotes.ui.mainscreen.list.ListOfNotesFragment;
+import ru.geekbrains.listofnotes.ui.mainscreen.list.NoteAction;
 
 public class MainFragment extends Fragment implements ListOfNotesFragment.OnNoteClicked, EditNoteHolder {
 
     private MainFragmentRouter mainFragmentRouter;
     private NoteRepository noteRepository;
+    private Note deletedNote;
+    private int indexDeletedNote;
 
     public MainFragmentRouter getRouter() {
         return mainFragmentRouter;
@@ -60,16 +63,31 @@ public class MainFragment extends Fragment implements ListOfNotesFragment.OnNote
         } else {
             noteIndex = noteRepository.updateNote(note);
         }
-        if (noteIndex == noteRepository.NO_NOTE) {
+        if (noteIndex == NoteRepository.NO_NOTE) {
             Toast.makeText(requireContext(), "No note", Toast.LENGTH_LONG).show();
             return;
         }
-        mainFragmentRouter.showListOfNotes(note, isNewNote);
+        mainFragmentRouter.showListOfNotes(note, isNewNote ? NoteAction.ADD : NoteAction.UPDATE);
     }
 
     @Override
-    public void abortEditingNote() {
-
+    public void deleteNote(Note note) {
+        int index = noteRepository.deleteNote(note);
+        if (index != NoteRepository.NO_NOTE) {
+            mainFragmentRouter.showListOfNotes(note, NoteAction.DELETE);
+            indexDeletedNote = index;
+            deletedNote = note;
+        }
     }
 
+    @Override
+    public void undoDelete() {
+        if (deletedNote == null) {
+            Toast.makeText(requireContext(), "No note to undo delete", Toast.LENGTH_LONG).show();
+            return;
+        }
+        indexDeletedNote = noteRepository.undoDeleteNote(deletedNote, indexDeletedNote);
+        mainFragmentRouter.undoDelete(deletedNote, indexDeletedNote);
+        deletedNote = null;
+    }
 }

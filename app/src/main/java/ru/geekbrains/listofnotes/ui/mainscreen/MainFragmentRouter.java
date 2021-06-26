@@ -55,12 +55,12 @@ public class MainFragmentRouter {
         }
     }
 
-    public void showListOfNotes(Note note, boolean isNewNote) {
+    public void showListOfNotes(Note note, NoteAction noteAction) {
         ListOfNotesFragment listOfNotesFragment = new ListOfNotesFragment();
         if (note != null) {
             Bundle bundleResult = new Bundle();
             bundleResult.putParcelable(KEY_NOTE, note);
-            bundleResult.putString(KEY_NOTE_ACTION, isNewNote ? NoteAction.ADD.getKey() : NoteAction.UPDATE.getKey());
+            bundleResult.putString(KEY_NOTE_ACTION, noteAction.getKey());
             fragmentManager.setFragmentResult(KEY_RESULT, bundleResult);
         }
         setFragment(listOfNotesFragment);
@@ -81,6 +81,13 @@ public class MainFragmentRouter {
 
     private int getContainerViewIdOfList(boolean isLand) {
         return isLand ? R.id.list_of_notes_fragment : R.id.notes_details_fragment;
+    }
+
+    public void undoDelete(Note note, int index) {
+        Fragment fragment = fragmentManager.findFragmentById(getContainerViewIdOfList(isLandscape));
+        if (fragment instanceof ListOfNotesFragment) {
+            ((ListOfNotesFragment) fragment).undoDeleteNote(note, index);
+        }
     }
 
     public boolean closeDetailFragment() {

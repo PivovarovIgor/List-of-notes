@@ -83,6 +83,21 @@ public class NoteRepositoryImpl implements NoteRepository {
         return index;
     }
 
+    @Override
+    public int undoDeleteNote(Note note, int indexRecover) {
+        int index = findNoteInCollection(note);
+        if (index != NO_NOTE) {
+            return index;
+        }
+        if (indexRecover > notes.size() - 1) {
+            notes.add(note);
+            indexRecover = notes.size() - 1;
+        } else {
+            notes.add(indexRecover, note);
+        }
+        return indexRecover;
+    }
+
     private int findNoteInCollection(Note note) {
         for (int i = 0; i < notes.size(); i++) {
             if (note.idNoteEquals(notes.get(i))) {
