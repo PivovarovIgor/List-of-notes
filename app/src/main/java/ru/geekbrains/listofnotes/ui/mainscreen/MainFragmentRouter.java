@@ -83,10 +83,10 @@ public class MainFragmentRouter {
         return isLand ? R.id.list_of_notes_fragment : R.id.notes_details_fragment;
     }
 
-    public void undoDelete(Note note, int index) {
+    public void undoDelete(Note note) {
         Fragment fragment = fragmentManager.findFragmentById(getContainerViewIdOfList(isLandscape));
         if (fragment instanceof ListOfNotesFragment) {
-            ((ListOfNotesFragment) fragment).undoDeleteNote(note, index);
+            ((ListOfNotesFragment) fragment).addNote(note);
         }
     }
 

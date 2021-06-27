@@ -22,12 +22,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.util.List;
 import java.util.Random;
 
 import ru.geekbrains.listofnotes.R;
 import ru.geekbrains.listofnotes.domain.Note;
-import ru.geekbrains.listofnotes.domain.NoteRepositoryImpl;
+import ru.geekbrains.listofnotes.domain.NoteFirestoreRepository;
+import ru.geekbrains.listofnotes.domain.NoteRepository;
 import ru.geekbrains.listofnotes.ui.mainscreen.EditNoteHolder;
 import ru.geekbrains.listofnotes.ui.mainscreen.MainFragmentRouter;
 
@@ -42,6 +42,7 @@ public class ListOfNotesFragment extends Fragment {
     private Note selectedNote;
     private int scrollPosition;
     private RecyclerView listOfNotes;
+    private final NoteRepository repository = NoteFirestoreRepository.SINGLE_INSTANCE;
 
     public ListOfNotesFragment() {
         writeLog("create instance");
@@ -71,8 +72,10 @@ public class ListOfNotesFragment extends Fragment {
         notesAdapter.setOnNoteClickedListener(note -> onNoteClicked.onNoteClicked(note));
         notesAdapter.setOnNoteLongClickedListener(note -> selectedNote = note);
 
-        List<Note> notes = NoteRepositoryImpl.SINGLE_INSTANCE.getNotes();
-        notesAdapter.setData(notes);
+        repository.getNotes(result -> {
+            notesAdapter.setData(result);
+            notesAdapter.notifyDataSetChanged();
+        });
     }
 
     @Nullable
@@ -219,8 +222,8 @@ public class ListOfNotesFragment extends Fragment {
         Log.i(TAG, create_instance + " id:" + INSTANCE_ID);
     }
 
-    public void undoDeleteNote(Note note, int index) {
-        notesAdapter.addNote(note, index);
+    public void addNote(Note note) {
+        notesAdapter.addNote(note);
     }
 
     public interface OnNoteClicked {

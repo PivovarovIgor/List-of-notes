@@ -12,9 +12,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import ru.geekbrains.listofnotes.R;
+import ru.geekbrains.listofnotes.domain.Callback;
 import ru.geekbrains.listofnotes.domain.Note;
+import ru.geekbrains.listofnotes.domain.NoteFirestoreRepository;
 import ru.geekbrains.listofnotes.domain.NoteRepository;
-import ru.geekbrains.listofnotes.domain.NoteRepositoryImpl;
 import ru.geekbrains.listofnotes.ui.mainscreen.list.ListOfNotesFragment;
 import ru.geekbrains.listofnotes.ui.mainscreen.list.NoteAction;
 
@@ -32,7 +33,7 @@ public class MainFragment extends Fragment implements ListOfNotesFragment.OnNote
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        noteRepository = NoteRepositoryImpl.SINGLE_INSTANCE;
+        noteRepository = NoteFirestoreRepository.SINGLE_INSTANCE;
     }
 
     @Override
@@ -57,27 +58,38 @@ public class MainFragment extends Fragment implements ListOfNotesFragment.OnNote
 
     @Override
     public void applyEditedNote(Note note, boolean isNewNote) {
-        int noteIndex;
         if (isNewNote) {
-            noteIndex = noteRepository.addNote(note);
+            noteRepository.addNote(note, new Callback<Note>() {
+                @Override
+                public void onSuccess(Note result) {
+                    if (result == null) {
+                        Toast.makeText(requireContext(), "No note", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    mainFragmentRouter.showListOfNotes(result, isNewNote ? NoteAction.ADD : NoteAction.UPDATE);
+                }
+            });
         } else {
-            noteIndex = noteRepository.updateNote(note);
+            noteRepository.updateNote(note, new Callback<Note>() {
+                @Override
+                public void onSuccess(Note result) {
+                    mainFragmentRouter.showListOfNotes(result, isNewNote ? NoteAction.ADD : NoteAction.UPDATE);
+                }
+            });
         }
-        if (noteIndex == NoteRepository.NO_NOTE) {
-            Toast.makeText(requireContext(), "No note", Toast.LENGTH_LONG).show();
-            return;
-        }
-        mainFragmentRouter.showListOfNotes(note, isNewNote ? NoteAction.ADD : NoteAction.UPDATE);
     }
 
     @Override
     public void deleteNote(Note note) {
-        int index = noteRepository.deleteNote(note);
-        if (index != NoteRepository.NO_NOTE) {
-            mainFragmentRouter.showListOfNotes(note, NoteAction.DELETE);
-            indexDeletedNote = index;
-            deletedNote = note;
-        }
+        noteRepository.deleteNote(note, new Callback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean result) {
+                if (result) {
+                    mainFragmentRouter.showListOfNotes(note, NoteAction.DELETE);
+                    deletedNote = note;
+                }
+            }
+        });
     }
 
     @Override
@@ -86,8 +98,12 @@ public class MainFragment extends Fragment implements ListOfNotesFragment.OnNote
             Toast.makeText(requireContext(), "No note to undo delete", Toast.LENGTH_LONG).show();
             return;
         }
-        indexDeletedNote = noteRepository.undoDeleteNote(deletedNote, indexDeletedNote);
-        mainFragmentRouter.undoDelete(deletedNote, indexDeletedNote);
-        deletedNote = null;
+        noteRepository.addNote(deletedNote, new Callback<Note>() {
+            @Override
+            public void onSuccess(Note result) {
+                mainFragmentRouter.undoDelete(result);
+                deletedNote = null;
+            }
+        });
     }
 }

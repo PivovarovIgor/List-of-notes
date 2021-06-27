@@ -20,12 +20,16 @@ public class Note implements Parcelable {
         }
     };
     private static int countId = 0;
-    private final int id;
+    private final String id;
     private String caption;
     private String description;
     private Calendar createDate;
 
     public Note(String caption, String description, Calendar createDate) {
+        this(String.valueOf(countId++), caption, description, createDate);
+    }
+
+    public Note(String id, String caption, String description, Calendar createDate) {
         this.caption = caption;
         this.description = description;
         if (createDate == null) {
@@ -33,8 +37,7 @@ public class Note implements Parcelable {
         } else {
             this.createDate = (Calendar) createDate.clone();
         }
-        this.id = countId;
-        countId++;
+        this.id = id;
     }
 
     public Note() {
@@ -45,7 +48,7 @@ public class Note implements Parcelable {
         caption = in.readString();
         description = in.readString();
         createDate = (Calendar) in.readSerializable();
-        id = in.readInt();
+        id = in.readString();
     }
 
     public String getCaption() {
@@ -76,7 +79,11 @@ public class Note implements Parcelable {
         if (note == null) {
             return false;
         }
-        return this.id == note.id;
+        return this.id.equals(note.id);
+    }
+
+    public String getId() {
+        return id;
     }
 
     @Override
@@ -89,7 +96,7 @@ public class Note implements Parcelable {
         dest.writeString(caption);
         dest.writeString(description);
         dest.writeSerializable(createDate);
-        dest.writeInt(id);
+        dest.writeString(id);
     }
 
     @Override

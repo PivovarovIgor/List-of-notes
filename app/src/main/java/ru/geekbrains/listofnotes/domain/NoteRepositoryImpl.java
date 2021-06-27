@@ -6,7 +6,7 @@ import java.util.List;
 
 public class NoteRepositoryImpl implements NoteRepository {
 
-    public static NoteRepositoryImpl SINGLE_INSTANCE = new NoteRepositoryImpl();
+    public static NoteRepository SINGLE_INSTANCE = new NoteRepositoryImpl();
 
     private List<Note> notes;
 
@@ -45,15 +45,16 @@ public class NoteRepositoryImpl implements NoteRepository {
                 new GregorianCalendar(2021, 2, 17)));
     }
 
+
     @Override
-    public List<Note> getNotes() {
-        return notes;
+    public void getNotes(Callback<List<Note>> callback) {
+        callback.onSuccess(notes);
     }
 
     @Override
-    public int addNote(Note note) {
+    public void addNote(Note note, Callback<Note> callback) {
         if (note == null) {
-            return NO_NOTE;
+            callback.onSuccess(null);
         }
         int index = findNoteInCollection(note);
         if (index == NO_NOTE) {
@@ -62,40 +63,27 @@ public class NoteRepositoryImpl implements NoteRepository {
         } else {
             notes.set(index, note);
         }
-        return index;
+        callback.onSuccess(note);
     }
 
     @Override
-    public int updateNote(Note note) {
+    public void updateNote(Note note, Callback<Note> callback) {
         int index = findNoteInCollection(note);
         if (index != NO_NOTE) {
             notes.set(index, note);
         }
-        return index;
+        callback.onSuccess(note);
     }
 
     @Override
-    public int deleteNote(Note note) {
+    public void deleteNote(Note note, Callback<Boolean> callback) {
         int index = findNoteInCollection(note);
         if (index != NO_NOTE) {
             notes.remove(index);
+            callback.onSuccess(true);
+            return;
         }
-        return index;
-    }
-
-    @Override
-    public int undoDeleteNote(Note note, int indexRecover) {
-        int index = findNoteInCollection(note);
-        if (index != NO_NOTE) {
-            return index;
-        }
-        if (indexRecover > notes.size() - 1) {
-            notes.add(note);
-            indexRecover = notes.size() - 1;
-        } else {
-            notes.add(indexRecover, note);
-        }
-        return indexRecover;
+        callback.onSuccess(false);
     }
 
     private int findNoteInCollection(Note note) {

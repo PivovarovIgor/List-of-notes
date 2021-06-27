@@ -4,15 +4,14 @@ import java.util.List;
 
 public interface NoteRepository {
 
-    static final int NO_NOTE = -1;
+    int NO_NOTE = -1;
 
-    List<Note> getNotes();
+    void getNotes(Callback<List<Note>> callback);
 
-    int addNote(Note note);
+    void addNote(Note note, Callback<Note> callback);
 
-    int updateNote(Note note);
+    void updateNote(Note note, Callback<Note> callback);
 
-    int deleteNote(Note note);
+    void deleteNote(Note note, Callback<Boolean> callback);
 
-    int undoDeleteNote(Note note, int indexRecover);
 }
