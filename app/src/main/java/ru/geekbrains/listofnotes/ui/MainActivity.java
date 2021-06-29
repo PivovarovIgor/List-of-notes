@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -15,11 +17,14 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.Random;
 
 import ru.geekbrains.listofnotes.R;
+import ru.geekbrains.listofnotes.ui.auth.AuthData;
+import ru.geekbrains.listofnotes.ui.auth.AuthFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nav_drawer_main);
 
-        mainRouter = new MainRouter(getSupportFragmentManager());
+        mainRouter = new MainRouter(getSupportFragmentManager(), getApplicationContext());
 
         initToolBarAndDrawer();
 
@@ -47,6 +52,11 @@ public class MainActivity extends AppCompatActivity {
             writeLog("onCreate");
             mainRouter.showNotes();
         }
+
+        getSupportFragmentManager().setFragmentResultListener(AuthFragment.AUTH_RESULT, this, (requestKey, result) -> {
+            initHead();
+            mainRouter.showNotes();
+        });
     }
 
     private void initToolBarAndDrawer() {
@@ -79,6 +89,36 @@ public class MainActivity extends AppCompatActivity {
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
+
+        initHead();
+    }
+
+    private void initHead() {
+
+        NavigationView navigationView = findViewById(R.id.navigation_view);
+
+        View headView = navigationView.getHeaderView(0);
+
+        TextView userNameView = headView.findViewById(R.id.user_name);
+        TextView userEmailView = headView.findViewById(R.id.user_email);
+        MaterialButton unsignButton = headView.findViewById(R.id.unsign);
+
+        unsignButton.setOnClickListener(v -> {
+            AuthFragment.unSign(getApplicationContext());
+            initHead();
+            mainRouter.showNotes();
+        });
+
+        AuthData authData = AuthFragment.getAuthorizeData(getApplicationContext());
+        if (authData != null) {
+            userNameView.setText(authData.getName());
+            userEmailView.setText(authData.getEmail());
+            unsignButton.setVisibility(View.VISIBLE);
+        } else {
+            userNameView.setText(R.string.unauthorized);
+            userEmailView.setText("");
+            unsignButton.setVisibility(View.GONE);
+        }
     }
 
     @Override

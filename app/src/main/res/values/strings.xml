@@ -23,4 +23,6 @@
     <string name="edit_hint_input_description">input description</string>
     <string name="edit_create_date">Create date:</string>
     <string name="apply_edit">Apply edit</string>
+    <string name="un_sign">Un sign</string>
+    <string name="unauthorized">Unauthorized</string>
 </resources>

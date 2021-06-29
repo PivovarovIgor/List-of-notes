@@ -17,15 +17,25 @@
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/user_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/user_name"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Headline4" />
 
         <TextView
+            android:id="@+id/user_email"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/user_email" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/unsign"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/un_sign"
+            style="@style/Widget.MaterialComponents.Button.TextButton"/>
 
     </LinearLayout>
 
