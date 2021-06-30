@@ -23,7 +23,7 @@ public class NoteFirestoreRepository implements NoteRepository{
 
     public static NoteRepository SINGLE_INSTANCE = new NoteFirestoreRepository();
 
-    private FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+    private final FirebaseFirestore firebaseFirestore;
 
     private static final String NOTES = "notes";
     private static final String CREATE_DATE = "create date";
@@ -31,6 +31,7 @@ public class NoteFirestoreRepository implements NoteRepository{
     private static final String DESCRIPTION = "description";
 
     private NoteFirestoreRepository() {
+        firebaseFirestore = FirebaseFirestore.getInstance();
     }
 
     @Override
@@ -47,13 +48,19 @@ public class NoteFirestoreRepository implements NoteRepository{
 
                             ArrayList<Note> result = new ArrayList<>();
 
-                            for (QueryDocumentSnapshot document: task.getResult()) {
-                                String caption = (String) document.get(CAPTION);
-                                String description = (String) document.get(DESCRIPTION);
-                                Date createDate = ((Timestamp) document.get(CREATE_DATE)).toDate();
-                                Calendar calendar = Calendar.getInstance();
-                                calendar.setTime(createDate);
-                                result.add(new Note(document.getId(), caption, description, calendar));
+                            QuerySnapshot qs = task.getResult();
+                            if (qs != null) {
+                                for (QueryDocumentSnapshot document : qs) {
+                                    String caption = (String) document.get(CAPTION);
+                                    String description = (String) document.get(DESCRIPTION);
+                                    Calendar calendar = Calendar.getInstance();
+                                    Timestamp timestamp = (Timestamp) document.get(CREATE_DATE);
+                                    if (timestamp != null) {
+                                        Date createDate = timestamp.toDate();
+                                        calendar.setTime(createDate);
+                                    }
+                                    result.add(new Note(document.getId(), caption, description, calendar));
+                                }
                             }
 
                             callback.onSuccess(result);
@@ -74,6 +81,11 @@ public class NoteFirestoreRepository implements NoteRepository{
                     @Override
                     public void onComplete(@NonNull Task<DocumentReference> task) {
                         if (task.isSuccessful()) {
+                            DocumentReference dr = task.getResult();
+                            if (dr == null) {
+                                callback.onSuccess(null);
+                                return;
+                            }
                             Note newNote = new Note(task.getResult().getId(),
                                     note.getCaption(),
                                     note.getDescription(),

@@ -63,7 +63,7 @@ public class MainFragment extends Fragment implements ListOfNotesFragment.OnNote
                 @Override
                 public void onSuccess(Note result) {
                     if (result == null) {
-                        Toast.makeText(requireContext(), "No note", Toast.LENGTH_LONG).show();
+                        Toast.makeText(requireContext(), "Can't apply edit", Toast.LENGTH_LONG).show();
                         return;
                     }
                     mainFragmentRouter.showListOfNotes(result, isNewNote ? NoteAction.ADD : NoteAction.UPDATE);
@@ -101,6 +101,10 @@ public class MainFragment extends Fragment implements ListOfNotesFragment.OnNote
         noteRepository.addNote(deletedNote, new Callback<Note>() {
             @Override
             public void onSuccess(Note result) {
+                if (result == null) {
+                    Toast.makeText(requireContext(), "Can't undelete", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 mainFragmentRouter.undoDelete(result);
                 deletedNote = null;
             }
