@@ -8,7 +8,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import ru.geekbrains.listofnotes.R;
 import ru.geekbrains.listofnotes.domain.Note;
-import ru.geekbrains.listofnotes.ui.mainscreen.details.EditNoteFragment;
+import ru.geekbrains.listofnotes.ui.mainscreen.details.EditNoteBottomSheetDialogFragment;
 import ru.geekbrains.listofnotes.ui.mainscreen.details.NoteDetailsFragment;
 import ru.geekbrains.listofnotes.ui.mainscreen.list.ListOfNotesFragment;
 import ru.geekbrains.listofnotes.ui.mainscreen.list.NoteAction;
@@ -111,6 +111,8 @@ public class MainFragmentRouter {
     }
 
     public void beginEditingNote(Note note) {
-        setFragment(EditNoteFragment.newInstance(note));
+        closeDetailFragment();
+        EditNoteBottomSheetDialogFragment editDialog = EditNoteBottomSheetDialogFragment.newInstance(note);
+        editDialog.show(fragmentManager, EditNoteBottomSheetDialogFragment.TAG);
     }
 }

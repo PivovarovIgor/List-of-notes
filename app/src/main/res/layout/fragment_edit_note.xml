@@ -17,7 +17,7 @@
         android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
         app:layout_constraintEnd_toStartOf="@id/edit_caption"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/apply_edit_button" />
 
     <EditText
         android:id="@+id/edit_caption"
@@ -74,5 +74,13 @@
         app:layout_constraintStart_toEndOf="@id/title_create_date"
         app:layout_constraintTop_toBottomOf="@id/edit_description" />
 
+    <Button
+        android:id="@+id/apply_edit_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/apply_edit"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

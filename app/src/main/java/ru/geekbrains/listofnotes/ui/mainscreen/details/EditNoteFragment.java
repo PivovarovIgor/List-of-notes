@@ -84,7 +84,7 @@ public class EditNoteFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
-        if (item.getItemId() == R.id.applyEdit) {
+        if (item.getItemId() == R.id.apply_edit) {
             if (editNoteHolder != null) {
 
                 Calendar newCreateDate = Calendar.getInstance();
