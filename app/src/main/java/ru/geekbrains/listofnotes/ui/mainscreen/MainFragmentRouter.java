@@ -56,14 +56,17 @@ public class MainFragmentRouter {
     }
 
     public void showListOfNotes(Note note, NoteAction noteAction) {
-        ListOfNotesFragment listOfNotesFragment = new ListOfNotesFragment();
         if (note != null) {
             Bundle bundleResult = new Bundle();
             bundleResult.putParcelable(KEY_NOTE, note);
             bundleResult.putString(KEY_NOTE_ACTION, noteAction.getKey());
             fragmentManager.setFragmentResult(KEY_RESULT, bundleResult);
         }
-        setFragment(listOfNotesFragment);
+        Fragment fragment = fragmentManager.findFragmentById(getContainerViewIdOfList(isLandscape));
+        if (!(fragment instanceof ListOfNotesFragment)) {
+            ListOfNotesFragment listOfNotesFragment = new ListOfNotesFragment();
+            setFragment(listOfNotesFragment);
+        }
     }
 
     private void setFragment(Fragment fragment) {

@@ -1,7 +1,9 @@
 package ru.geekbrains.listofnotes.ui.mainscreen.list;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -12,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -35,14 +38,13 @@ public class ListOfNotesFragment extends Fragment {
 
     private static final String TAG = "ListOfNotesFragment";
     private final int INSTANCE_ID = new Random().nextInt(100);
-
+    private final NoteRepository repository = NoteFirestoreRepository.SINGLE_INSTANCE;
     private OnNoteClicked onNoteClicked;
     private EditNoteHolder editNoteHolder;
     private ListOfNotesAdapter notesAdapter;
     private Note selectedNote;
     private int scrollPosition;
     private RecyclerView listOfNotes;
-    private final NoteRepository repository = NoteFirestoreRepository.SINGLE_INSTANCE;
 
     public ListOfNotesFragment() {
         writeLog("create instance");
@@ -126,16 +128,38 @@ public class ListOfNotesFragment extends Fragment {
             }
             return true;
         } else if (item.getItemId() == R.id.option_menu_delete_note) {
-            editNoteHolder.deleteNote(selectedNote);
-            EditNoteHolder tempEditNoteHolder = editNoteHolder;
-            Snackbar.make(((Activity) requireContext()).findViewById(R.id.coordinator),
-                    "The note has deleted",
-                    BaseTransientBottomBar.LENGTH_LONG)
-                    .setAction(R.string.cancel, v -> tempEditNoteHolder.undoDelete())
+
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(requireContext());
+            dialogBuilder
+                    .setTitle(R.string.title_dialog_delete)
+                    .setMessage(String.format(getString(R.string.message_dialog_delete), selectedNote.getCaption()))
+                    .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            editNoteHolder.deleteNote(selectedNote);
+                            EditNoteHolder tempEditNoteHolder = editNoteHolder;
+                            Snackbar.make(((Activity) requireContext()).findViewById(R.id.coordinator),
+                                    "The note has deleted",
+                                    BaseTransientBottomBar.LENGTH_LONG)
+                                    .setAction(R.string.cancel, v -> tempEditNoteHolder.undoDelete())
+                                    .show();
+                        }
+                    })
+                    .setNegativeButton(R.string.cancel, (dialog, which) -> cancelActionToDeleteNote())
+                    .setOnCancelListener(dialog -> cancelActionToDeleteNote())
                     .show();
+
             return true;
         }
         return false;
+    }
+
+    private void cancelActionToDeleteNote() {
+        Toast.makeText(requireActivity().getApplicationContext(),
+                String.format(getString(R.string.message_dialog_delete_canceled), selectedNote.getCaption()),
+                Toast.LENGTH_LONG)
+                .show();
+        selectedNote = null;
     }
 
     @Override
