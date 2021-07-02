@@ -36,7 +36,7 @@ public class AuthFragment extends Fragment {
     public static AuthData getAuthorizeData(Context context) {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         if (account != null) {
-            return new AuthData(account.getDisplayName(), account.getEmail());
+            return new AuthData(account.getDisplayName(), account.getEmail(), account.getPhotoUrl());
         }
         return null;
     }

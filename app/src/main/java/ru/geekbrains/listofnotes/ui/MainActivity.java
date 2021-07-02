@@ -1,11 +1,14 @@
 package ru.geekbrains.listofnotes.ui;
 
-import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,7 +23,12 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.navigation.NavigationView;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import ru.geekbrains.listofnotes.R;
 import ru.geekbrains.listofnotes.ui.auth.AuthData;
@@ -32,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
 
     private final int INSTANCE_ID = new Random().nextInt(100);
     private MainRouter mainRouter;
+    private final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
+    private Handler HANDLER = new Handler(Looper.getMainLooper());
 
     public MainActivity() {
         writeLog("create instance");
@@ -101,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
 
         TextView userNameView = headView.findViewById(R.id.user_name);
         TextView userEmailView = headView.findViewById(R.id.user_email);
+        ImageView avatarImageView = headView.findViewById(R.id.avatar);
         MaterialButton unsignButton = headView.findViewById(R.id.unsign);
 
         unsignButton.setOnClickListener(v -> {
@@ -114,59 +125,31 @@ public class MainActivity extends AppCompatActivity {
             userNameView.setText(authData.getName());
             userEmailView.setText(authData.getEmail());
             unsignButton.setVisibility(View.VISIBLE);
+
+            EXECUTOR.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        InputStream inputStream = (InputStream) new URL(authData.getUriPhoto().toString()).getContent();
+                        Drawable drawable = Drawable.createFromStream(inputStream, "avatar");
+                        HANDLER.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                avatarImageView.setImageDrawable(drawable);
+                            }
+                        });
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
         } else {
             userNameView.setText(R.string.unauthorized);
             userEmailView.setText("");
+            avatarImageView.setImageResource(R.drawable.avatar);
             unsignButton.setVisibility(View.GONE);
         }
-    }
-
-    @Override
-    protected void onStart() {
-        writeLog("onStart");
-        super.onStart();
-    }
-
-    @Override
-    protected void onResume() {
-        writeLog("onResume");
-        super.onResume();
-    }
-
-    @Override
-    protected void onResumeFragments() {
-        writeLog("onResumeFragments");
-        super.onResumeFragments();
-    }
-
-    @Override
-    protected void onPause() {
-        writeLog("onPause");
-        super.onPause();
-    }
-
-    @Override
-    protected void onStop() {
-        writeLog("onStop");
-        super.onStop();
-    }
-
-    @Override
-    protected void onRestart() {
-        writeLog("onRestart");
-        super.onRestart();
-    }
-
-    @Override
-    protected void onDestroy() {
-        writeLog("onDestroy");
-        super.onDestroy();
-    }
-
-    @Override
-    public void onConfigurationChanged(@NonNull Configuration newConfig) {
-        writeLog("onConfigurationChanged");
-        super.onConfigurationChanged(newConfig);
     }
 
     @Override
