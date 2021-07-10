@@ -1,5 +1,6 @@
 package ru.geekbrains.listofnotes.ui;
 
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -22,6 +24,11 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.navigation.NavigationView;
+import com.vk.api.sdk.VK;
+import com.vk.api.sdk.auth.VKAccessToken;
+import com.vk.api.sdk.auth.VKAuthCallback;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private MainRouter mainRouter;
     private final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
     private Handler HANDLER = new Handler(Looper.getMainLooper());
+    private boolean toUpdateAuth;
 
     public MainActivity() {
         writeLog("create instance");
@@ -125,24 +133,25 @@ public class MainActivity extends AppCompatActivity {
             userNameView.setText(authData.getName());
             userEmailView.setText(authData.getEmail());
             unsignButton.setVisibility(View.VISIBLE);
-
-            EXECUTOR.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        InputStream inputStream = (InputStream) new URL(authData.getUriPhoto().toString()).getContent();
-                        Drawable drawable = Drawable.createFromStream(inputStream, "avatar");
-                        HANDLER.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                avatarImageView.setImageDrawable(drawable);
-                            }
-                        });
-                    } catch (IOException e) {
-                        e.printStackTrace();
+            if (authData.getUriPhoto() != null) {
+                EXECUTOR.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            InputStream inputStream = (InputStream) new URL(authData.getUriPhoto().toString()).getContent();
+                            Drawable drawable = Drawable.createFromStream(inputStream, "avatar");
+                            HANDLER.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    avatarImageView.setImageDrawable(drawable);
+                                }
+                            });
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
-                }
-            });
+                });
+            }
 
         } else {
             userNameView.setText(R.string.unauthorized);
@@ -195,7 +204,35 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (toUpdateAuth) {
+            toUpdateAuth = false;
+            initHead();
+            mainRouter.showNotes();
+        }
+    }
+
     private void writeLog(String create_instance) {
         Log.i(TAG, create_instance + " id:" + INSTANCE_ID);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (data == null || !VK.onActivityResult(requestCode, resultCode, data, new VKAuthCallback() {
+            @Override
+            public void onLogin(@NotNull VKAccessToken vkAccessToken) {
+                VK.saveAccessToken(getApplicationContext(), VK.getUserId(), vkAccessToken.getAccessToken(), null);
+                toUpdateAuth = true;
+            }
+
+            @Override
+            public void onLoginFailed(int i) {
+                Toast.makeText(MainActivity.this, "The access is failed.", Toast.LENGTH_LONG).show();
+            }
+        })) {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 }

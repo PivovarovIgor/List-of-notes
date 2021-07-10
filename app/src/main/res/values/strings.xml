@@ -28,4 +28,6 @@
     <string name="title_dialog_delete">Delete note</string>
     <string name="message_dialog_delete">You have selected the note with title \"%s\" that you want to delete. Complete the operation?</string>
     <string name="message_dialog_delete_canceled">The action to delete note \"%s\" has canceled.</string>
+    <string name="vk_auth">VK auth</string>
+    <integer name="com_vk_sdk_AppId">7896364</integer>
 </resources>

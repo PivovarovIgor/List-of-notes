@@ -22,12 +22,17 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.Task;
+import com.vk.api.sdk.VK;
+import com.vk.api.sdk.auth.VKScope;
+
+import java.util.Collections;
 
 import ru.geekbrains.listofnotes.R;
 
 public class AuthFragment extends Fragment {
 
     public static final String AUTH_RESULT = "AUTH_RESULT";
+    private GoogleSignInClient googleSignInClient;
 
     public static AuthFragment newInstance() {
         return new AuthFragment();
@@ -38,16 +43,20 @@ public class AuthFragment extends Fragment {
         if (account != null) {
             return new AuthData(account.getDisplayName(), account.getEmail(), account.getPhotoUrl());
         }
+        if (VK.isLoggedIn()) {
+            return new AuthData("Игорь", "", null);
+        }
         return null;
     }
-
-    private GoogleSignInClient googleSignInClient;
 
     public static void unSign(Context context) {
         GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .build();
 
         GoogleSignIn.getClient(context, options).signOut();
+        if (VK.isLoggedIn()) {
+            VK.logout();
+        }
     }
 
     @Override
@@ -90,6 +99,13 @@ public class AuthFragment extends Fragment {
                 .setOnClickListener(v -> {
                     Intent intent = googleSignInClient.getSignInIntent();
                     launcher.launch(intent);
+                });
+        view.findViewById(R.id.sign_in_vk)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        VK.login(requireActivity(), Collections.singletonList(VKScope.NOTES));
+                    }
                 });
     }
 }
