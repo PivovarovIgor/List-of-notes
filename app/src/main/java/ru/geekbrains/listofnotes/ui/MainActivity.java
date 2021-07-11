@@ -38,6 +38,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import ru.geekbrains.listofnotes.R;
+import ru.geekbrains.listofnotes.domain.Callback;
 import ru.geekbrains.listofnotes.ui.auth.AuthData;
 import ru.geekbrains.listofnotes.ui.auth.AuthFragment;
 
@@ -46,8 +47,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     private final int INSTANCE_ID = new Random().nextInt(100);
-    private MainRouter mainRouter;
     private final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
+    private MainRouter mainRouter;
     private Handler HANDLER = new Handler(Looper.getMainLooper());
     private boolean toUpdateAuth;
 
@@ -128,32 +129,37 @@ public class MainActivity extends AppCompatActivity {
             mainRouter.showNotes();
         });
 
-        AuthData authData = AuthFragment.getAuthorizeData(getApplicationContext());
-        if (authData != null) {
-            userNameView.setText(authData.getName());
-            userEmailView.setText(authData.getEmail());
-            unsignButton.setVisibility(View.VISIBLE);
-            if (authData.getUriPhoto() != null) {
-                EXECUTOR.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            InputStream inputStream = (InputStream) new URL(authData.getUriPhoto().toString()).getContent();
-                            Drawable drawable = Drawable.createFromStream(inputStream, "avatar");
-                            HANDLER.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    avatarImageView.setImageDrawable(drawable);
+        boolean isAuth = (AuthFragment.getAuthorizeData(getApplicationContext(), new Callback<AuthData>() {
+            @Override
+            public void onSuccess(AuthData authData) {
+                if (authData != null) {
+                    userNameView.setText(authData.getName());
+                    userEmailView.setText(authData.getEmail());
+                    unsignButton.setVisibility(View.VISIBLE);
+                    if (authData.getUriPhoto() != null) {
+                        EXECUTOR.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    InputStream inputStream = (InputStream) new URL(authData.getUriPhoto().toString()).getContent();
+                                    Drawable drawable = Drawable.createFromStream(inputStream, "avatar");
+                                    HANDLER.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            avatarImageView.setImageDrawable(drawable);
+                                        }
+                                    });
+                                } catch (IOException e) {
+                                    e.printStackTrace();
                                 }
-                            });
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                            }
+                        });
                     }
-                });
-            }
 
-        } else {
+                }
+            }
+        }));
+        if (!isAuth) {
             userNameView.setText(R.string.unauthorized);
             userEmailView.setText("");
             avatarImageView.setImageResource(R.drawable.avatar);

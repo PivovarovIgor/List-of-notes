@@ -3,6 +3,7 @@ package ru.geekbrains.listofnotes.ui.auth;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,11 +24,21 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.Task;
 import com.vk.api.sdk.VK;
+import com.vk.api.sdk.VKApiCallback;
 import com.vk.api.sdk.auth.VKScope;
+import com.vk.sdk.api.users.UsersService;
+import com.vk.sdk.api.users.dto.NameCaseParam;
+import com.vk.sdk.api.users.dto.UsersFields;
+import com.vk.sdk.api.users.dto.UsersUserXtrCounters;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import ru.geekbrains.listofnotes.R;
+import ru.geekbrains.listofnotes.domain.Callback;
 
 public class AuthFragment extends Fragment {
 
@@ -38,15 +49,42 @@ public class AuthFragment extends Fragment {
         return new AuthFragment();
     }
 
-    public static AuthData getAuthorizeData(Context context) {
+    public static boolean getAuthorizeData(Context context, Callback<AuthData> callback) {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
         if (account != null) {
-            return new AuthData(account.getDisplayName(), account.getEmail(), account.getPhotoUrl());
+            if (callback != null) {
+                callback.onSuccess(new AuthData(account.getDisplayName(), account.getEmail(), account.getPhotoUrl()));
+            }
+            return true;
         }
         if (VK.isLoggedIn()) {
-            return new AuthData("Игорь", "", null);
+            if (callback != null) {
+                VK.execute((new UsersService()).usersGet(Arrays.asList(String.valueOf(VK.getUserId())),
+                        Arrays.asList(UsersFields.PHOTO_200),
+                        NameCaseParam.NOMINATIVE), new VKApiCallback<List<UsersUserXtrCounters>>() {
+                    @Override
+                    public void success(List<UsersUserXtrCounters> usersUserXtrCounters) {
+                        UsersUserXtrCounters us = usersUserXtrCounters.get(0);
+                        String name = us.getFirstName();
+                        String phone = us.getMobilePhone();
+                        String urlPhoto = us.getPhoto200();
+                        AuthData authData = new AuthData(
+                                (name != null) ? name : "",
+                                (phone != null) ? phone : "",
+                                (urlPhoto != null) ? Uri.parse(urlPhoto) : null);
+                        callback.onSuccess(authData);
+                    }
+
+                    @Override
+                    public void fail(@NotNull Exception e) {
+
+                    }
+                });
+
+            }
+            return true;
         }
-        return null;
+        return false;
     }
 
     public static void unSign(Context context) {

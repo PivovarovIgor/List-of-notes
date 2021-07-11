@@ -35,7 +35,7 @@ public class MainRouter {
     }
 
     public void showNotes() {
-        if (AuthFragment.getAuthorizeData(context) != null) {
+        if (AuthFragment.getAuthorizeData(context, null)) {
             setFragment(new MainFragment());
         } else {
             setFragment(AuthFragment.newInstance());

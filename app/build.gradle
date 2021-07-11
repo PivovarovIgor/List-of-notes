@@ -55,6 +55,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-auth:19.0.0'
 
     implementation 'com.vk:android-sdk-core:3.1.0'
+    implementation 'com.vk:android-sdk-api:3.1.0'
 
     implementation 'de.hdodenhof:circleimageview:3.1.0'
     testImplementation 'junit:junit:4.+'
